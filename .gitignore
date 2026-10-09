@@ -1,0 +1,9 @@
+# 依赖
+node_modules/
+
+# 本地配置（内含个人 Token，不要提交到 GitHub）
+.env
+
+# 系统与日志
+.DS_Store
+*.log

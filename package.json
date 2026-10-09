@@ -1,0 +1,16 @@
+{
+  "name": "mcd-skill",
+  "version": "0.1.0",
+  "description": "麦门省钱/套餐推荐助手 - 基于 McDonald's MCP 的 AI Skill（M-CODE 参赛作品）",
+  "type": "module",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "demo": "node scripts/demo.js",
+    "check": "node --check src/config.js && node --check src/mcpClient.js && node --check src/assistant.js && node --check src/main.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "dotenv": "^16.4.5"
+  }
+}
