@@ -1,53 +1,53 @@
-// 交互式 CLI：跑一个"麦门省钱/套餐推荐助手"
+// 交互式 CLI：麦门文学生成器
 import readline from "node:readline/promises";
-import { McMenuAssistant } from "./assistant.js";
+import { McMenuWriter } from "./assistant.js";
+import { styleNames } from "./generator/templates.js";
 
-function fmt(v) {
-  return v == null ? "-" : v;
+const WIDTH = 40;
+
+function divider(ch = "━") {
+  return ch.repeat(WIDTH);
 }
 
-async function showToday(a) {
-  const d = await a.today();
-  const dt = d.datetime ?? d.text ?? JSON.stringify(d);
-  return `📅 今天是：${dt}`;
+function renderCard(a) {
+  const { emoji, tag, styleName, text, context } = a;
+  const title = `${emoji} ${tag} · ${styleName}`;
+  const pad = Math.max(0, WIDTH - title.length);
+  return [
+    `${title}${" ".repeat(pad)}`,
+    divider(),
+    ...text.split("\n").map((l) => `  ${l}`),
+    divider("─"),
+    context.source === "mcp"
+      ? `数据源：McDonald's MCP 实时 · 活动「${context.activity}」· 单品「${context.dish}」`
+      : `数据源：离线示例（未配置 MCD_MCP_TOKEN）`,
+  ].join("\n");
 }
 
 async function showCampaigns(a) {
-  const data = await a.campaigns();
-  // campaign-calendar 的 data 通常是 { activities: [...] }
-  const list = Array.isArray(data?.activities) ? data.activities : Array.isArray(data) ? data : [];
-  if (list.length === 0) return "暂时没查到正在进行的活动，稍后再来看看。";
-  const lines = list.map((x, i) => {
-    const title = x.title ?? x.name ?? x.subject ?? "未命名活动";
-    const date = x.startDate ?? x.start_time ?? x.date ?? "";
-    return `  ${i + 1}. ${title}${date ? "（" + date + "）" : ""}`;
-  });
+  const camps = await a.campaigns();
+  if (camps.length === 0) return "暂未获取到本月活动（离线模式或暂无活动）。";
+  const lines = camps.map((x, i) => `  ${i + 1}. ${x.title}${x.date ? "（" + x.date + "）" : ""}`);
   return `🎉 本月麦当劳活动速览：\n${lines.join("\n")}`;
 }
 
-async function showRecommend(a, raw) {
-  const maxKcal = Number(raw.trim()) || 800;
-  const { items } = await a.recommend({ maxKcal });
-  if (items.length === 0) return `在 ${maxKcal} 千卡内没找到合适单品，试试放宽预算。`;
-  const lines = items.map(
-    (x, i) =>
-      `  ${i + 1}. ${x.name} —— ${x.kcal}千卡 / 蛋白${fmt(x.protein)}g / 脂肪${fmt(x.fat)}g / 碳水${fmt(x.carbohydrate)}g`
-  );
-  return `🍔 ≤${maxKcal}千卡推荐（按营养综合排序）：\n${lines.join("\n")}`;
-}
-
 const HELP = `可用命令：
-  today            查看当前日期
-  campaign         查看本月麦当劳活动
-  eat <千卡>       按热量预算推荐（如 eat 600）
-  help             显示帮助
-  exit / quit      退出`;
+  gen [风格]        生成一篇麦门文学（风格：${styleNames().join("/")}，缺省随机）
+  styles            列出全部风格
+  campaign          查看本月麦当劳活动（MCP 真实数据）
+  status            查看数据源状态（mcp / fallback）
+  help              显示帮助
+  exit / quit       退出`;
 
 async function main() {
-  const a = new McMenuAssistant();
-  await a.start();
+  const w = new McMenuWriter();
+  const mcpOk = await w.start();
+  console.log(
+    mcpOk
+      ? "麦门文学生成器已连接 McDonald's MCP（实时数据模式）。"
+      : "麦门文学生成器已启动（离线示例模式：未配置 MCD_MCP_TOKEN，使用内置示例数据）。"
+  );
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  console.log("麦门省钱/套餐推荐助手已连接 McDonald's MCP，输入 help 查看命令。");
 
   try {
     while (true) {
@@ -55,9 +55,10 @@ async function main() {
       if (!line) continue;
       const [cmd, arg] = line.split(/\s+/, 2);
       let out;
-      if (cmd === "today") out = await showToday(a);
-      else if (cmd === "campaign") out = await showCampaigns(a);
-      else if (cmd === "eat") out = await showRecommend(a, arg || "800");
+      if (cmd === "gen") out = renderCard(await w.write({ style: arg || "random" }));
+      else if (cmd === "styles") out = styleNames().map((s) => `  ${s}`).join("\n");
+      else if (cmd === "campaign") out = await showCampaigns(w);
+      else if (cmd === "status") out = w.status() === "mcp" ? "MCP 实时数据模式 ✅" : "离线示例模式（未配置 MCD_MCP_TOKEN）";
       else if (cmd === "help") out = HELP;
       else if (cmd === "exit" || cmd === "quit") break;
       else out = `未知命令：${cmd}（输入 help 查看用法）`;
@@ -65,7 +66,7 @@ async function main() {
     }
   } finally {
     rl.close();
-    await a.stop();
+    await w.stop();
   }
 }
 

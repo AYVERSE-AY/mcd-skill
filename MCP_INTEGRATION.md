@@ -16,42 +16,48 @@
 
 | Tool 名 | 用途 | 在本项目的业务价值 |
 |---|---|---|
-| `now-time-info` | 返回当前完整时间 | 让助手知道"今天"，为推荐提供时效性 |
-| `campaign-calendar` | 查询当月营销活动日历 | 向用户展示最近/进行中的麦当劳活动 |
-| `list-nutrition-foods` | 获取常见餐品营养成分（能量/蛋白/脂肪/碳水/钠/钙） | 按热量预算与营养结构做"低卡/高蛋白"套餐推荐 |
+| `campaign-calendar` | 查询当月营销活动日历 | 把**当月真实活动名**注入麦门文学文案，让玩梗内容带真实信息 |
+| `list-nutrition-foods` | 获取常见餐品营养成分 | 从官方营养库**随机选取真实单品名**（巨无霸/麦辣鸡腿堡/新地…）嵌入文案，内容可溯源 |
+
+> 说明：`now-time-info`、`create-order`、`calculate-price` 等工具本项目未调用；文案中的"餐段"由本地时间推导，避免为取数而调用多余接口。
 
 ## 三、调用流程
 
 ```
-用户提问
+用户输入 gen [风格]
    │
    ▼
 main.js (交互入口)
    │
    ▼
-assistant.js ──► 解析意图：today / campaign / eat <千卡>
-   │
+assistant.js ──► collectContext()：并行获取真实活动 + 单品名
+   │                （MCP 不可用时自动降级为内置示例数据）
    ▼
-mcpClient.js ──► MCP Connect (Bearer 鉴权) ──► listTools / callTool
+mcpClient.js ──► MCP Connect (Bearer 鉴权) ──► callTool("campaign-calendar") / callTool("list-nutrition-foods")
    │
    ▼
 mcp.mcd.cn (远程 MCP Server)
    │
    ▼
-返回数据 → 解析(TOON营养格式) → 按热量/营养打分排序 → 输出中文建议
+返回数据 ──► generator.js ──► 模板渲染（语录/礼赞/诗词/说唱/祈福）──► 输出文案卡片
 ```
 
-关键实现点（`src/mcpClient.js`）：
+关键实现点（`src/mcpClient.js` + `src/assistant.js`）：
 ```js
 const transport = new StreamableHTTPClientTransport(new URL(MCP_URL), {
   requestInit: { headers: { Authorization: `Bearer ${token}` } },
 });
 await client.connect(transport);
-const text = await client.callTool({ name: "list-nutrition-foods" });
+
+// assistant.js：取真实活动名与单品名注入文案
+const campText = await this.mcp.call("campaign-calendar");       // → ctx.activity
+const nutrText = await this.mcp.call("list-nutrition-foods");    // → ctx.dish
+const result = generate({ style, context: ctx });                // 模板渲染
 ```
 
 ## 四、业务价值
 
-- **实用**：把用户「想省心吃麦当劳」的真实需求，落地为"今日活动 + 热量适配"的可执行建议；
-- **真实数据**：所有推荐均基于麦当劳官方 MCP 的真实营养/活动数据，非编造；
-- **可扩展**：主干已打通，后续可无缝接入 `create-order`（真点餐）、`calculate-price`（帮算优惠后最低价）、`query-meals`（门店菜单）等，把"省钱助手"做完整。
+- **创意 + 实用**：麦门文学是年轻圈层真实在玩的梗，具备天然传播力；作品把"玩梗"与"真实数据"结合，让每条文案都带可验证的麦当劳信息；
+- **真实数据**：文案中的活动名与餐品名均来自麦当劳官方 MCP，非编造内容；
+- **稳定可复现**：模板引擎先行，不依赖 LLM API；支持 seed 复现，录屏演示与评测结果一致；
+- **可扩展**：生成器已预留 LLM 适配槽位，后续可无缝接入大模型自由创作，也可扩展 `create-order`（真点餐）等能力。
