@@ -1,220 +1,55 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>麦门神谕 · The McMen Oracle</title>
-<style>
-  @font-face {
-    font-family: "Cinzel";
-    src: local("Cinzel"), local("Cinzel-Regular");
-  }
-  :root {
-    --navy: #0B0F26;
-    --navy-light: #151B3D;
-    --gold: #C9A227;
-    --gold-light: #E6C96B;
-    --gold-dim: #8A6E1E;
-    --parchment: #F3E6C8;
-    --parchment-dim: #DECAA0;
-    --crimson: #7B1F3A;
-    --ink: #2A2132;
-    --muted: #8A7F68;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun", "Georgia", serif;
-    background: var(--navy) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
-    color: var(--parchment);
-    min-height: 100vh;
-    display: flex; flex-direction: column; align-items: center;
-    padding: 24px 12px 40px;
-    overflow-x: hidden;
-  }
-  header { text-align: center; margin-bottom: 18px; position: relative; }
-  .sigil {
-    width: 64px; height: 64px; margin: 0 auto 10px;
-    color: var(--gold);
-  }
-  h1 {
-    font-family: "Cinzel", "Trajan Pro", "Times New Roman", serif;
-    font-size: 28px; letter-spacing: 4px; font-weight: 400;
-    color: var(--gold-light); text-transform: uppercase;
-  }
-  h1 small {
-    display: block; font-size: 13px; letter-spacing: 8px; color: var(--parchment-dim);
-    margin-top: 6px; font-family: "Noto Serif SC", serif; text-transform: none;
-  }
-  .status {
-    display: inline-block; margin-top: 12px; font-size: 12px; letter-spacing: 1px;
-    padding: 5px 14px; border: 1px solid var(--gold-dim); color: var(--gold);
-    background: rgba(201,162,39,0.08);
-  }
-  .status.fallback { color: var(--parchment-dim); border-color: var(--muted); background: rgba(243,230,200,0.06); }
-  .styles { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 18px 0 22px; }
-  .style-chip {
-    background: transparent; border: 1px solid var(--gold-dim); color: var(--parchment-dim);
-    padding: 8px 12px; cursor: pointer; font-size: 13px; letter-spacing: 1px;
-    font-family: inherit; transition: .2s; min-width: 84px;
-  }
-  .style-chip:hover { border-color: var(--gold); color: var(--gold-light); }
-  .style-chip.active {
-    background: rgba(201,162,39,0.14); border-color: var(--gold); color: var(--gold-light);
-    box-shadow: 0 0 0 1px var(--gold-dim);
-  }
-  .style-chip .num { display: block; font-family: "Cinzel", serif; font-size: 10px; color: var(--gold-dim); margin-bottom: 2px; }
-  .card-wrap {
-    width: min(420px, 92vw); position: relative; filter: drop-shadow(0 20px 50px rgba(0,0,0,.55));
-  }
-  .card {
-    aspect-ratio: 2 / 3.5;
-    background: var(--parchment) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.07'/%3E%3C/svg%3E");
-    color: var(--ink);
-    border: 2px solid var(--gold);
-    display: flex; flex-direction: column; align-items: center;
-    padding: 5.5% 6% 5%;
-    position: relative; overflow: hidden;
-    box-shadow: inset 0 0 60px rgba(123,31,58,.08);
-  }
-  .card::before, .card::after {
-    content: ""; position: absolute; inset: 8px;
-    border: 1px solid var(--gold-dim); pointer-events: none;
-  }
-  .card::after {
-    inset: 14px; border-style: dashed; opacity: .45;
-  }
-  .corner {
-    position: absolute; width: 38px; height: 38px; color: var(--crimson);
-    pointer-events: none; opacity: .9;
-  }
-  .corner.tl { top: 10px; left: 10px; transform: rotate(0); }
-  .corner.tr { top: 10px; right: 10px; transform: rotate(90deg); }
-  .corner.bl { bottom: 10px; left: 10px; transform: rotate(270deg); }
-  .corner.br { bottom: 10px; right: 10px; transform: rotate(180deg); }
-  .arch-frame {
-    width: 100%; aspect-ratio: 1 / 1.18;
-    border: 1.5px solid var(--gold-dim);
-    border-radius: 50% 50% 4px 4px / 30% 30% 4px 4px;
-    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-    padding: 14% 8% 8%; position: relative; margin-bottom: 5%;
-    background: linear-gradient(180deg, rgba(201,162,39,.06) 0%, transparent 55%);
-  }
-  .arch-frame::before {
-    content: ""; position: absolute; inset: 5px; border: 1px solid var(--gold-dim);
-    border-radius: 50% 50% 4px 4px / 30% 30% 4px 4px; opacity: .5;
-  }
-  .card-top {
-    text-align: center; width: 100%; margin-bottom: 8%;
-  }
-  .card-roman {
-    font-family: "Cinzel", serif; font-size: 13px; letter-spacing: 2px; color: var(--crimson);
-    margin-bottom: 4px;
-  }
-  .card-title {
-    font-size: 15px; letter-spacing: 3px; color: var(--crimson);
-    font-weight: 700;
-  }
-  .card-center {
-    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    width: 100%; text-align: center;
-  }
-  .sun {
-    width: 56px; height: 56px; color: var(--gold); margin-bottom: 8%;
-  }
-  .card-text {
-    font-size: clamp(15px, 4.4vw, 19px); line-height: 2; letter-spacing: 1px;
-    white-space: pre-line; width: 100%;
-  }
-  .card-bottom {
-    width: 100%; text-align: center; margin-top: auto; padding-top: 6%;
-    border-top: 1px solid var(--parchment-dim);
-  }
-  .card-source {
-    font-size: 11px; letter-spacing: 1px; color: var(--muted); margin-bottom: 4px;
-  }
-  .card-meta {
-    font-size: 10px; letter-spacing: .5px; color: var(--muted); line-height: 1.7;
-  }
-  .actions { display: flex; gap: 12px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
-  button.action {
-    border: 1px solid var(--gold-dim); background: transparent; color: var(--gold);
-    padding: 11px 22px; font-size: 14px; letter-spacing: 1px; cursor: pointer;
-    font-family: inherit; transition: .2s;
-  }
-  button.action:hover { background: rgba(201,162,39,.12); border-color: var(--gold); }
-  button.action:disabled { opacity: .5; cursor: wait; }
-  .toast {
-    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
-    background: var(--navy-light); color: var(--gold-light); border: 1px solid var(--gold-dim);
-    padding: 10px 22px; font-size: 13px; letter-spacing: 1px;
-    opacity: 0; transition: .25s; pointer-events: none; z-index: 10;
-  }
-  .toast.show { opacity: 1; }
-  @media (max-width: 420px) {
-    h1 { font-size: 22px; letter-spacing: 2px; }
-    .card-text { font-size: 15px; }
-  }
-</style>
-</head>
-<body>
-<header>
-  <svg class="sigil" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.2">
-    <circle cx="32" cy="32" r="28"/>
-    <path d="M32 4v12M32 48v12M4 32h12M48 32h12"/>
-    <circle cx="32" cy="32" r="8" fill="currentColor" fill-opacity=".2"/>
-    <path d="M32 12l4 8h8l-6 6 2 8-8-5-8 5 2-8-6-6h8z"/>
-  </svg>
-  <h1>THE MCMEN ORACLE<small>麦 门 神 谕</small></h1>
-  <div class="status" id="status">连接中…</div>
-</header>
-
-<div class="styles" id="styles"></div>
-
-<div class="card-wrap">
-  <div class="card" id="card">
-    <svg class="corner tl" viewBox="0 0 40 40"><path d="M4 36V8a4 4 0 0 1 4-4h28" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 32V12a2 2 0 0 1 2-2h18" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
-    <svg class="corner tr" viewBox="0 0 40 40"><path d="M4 36V8a4 4 0 0 1 4-4h28" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 32V12a2 2 0 0 1 2-2h18" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
-    <svg class="corner bl" viewBox="0 0 40 40"><path d="M4 36V8a4 4 0 0 1 4-4h28" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 32V12a2 2 0 0 1 2-2h18" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
-    <svg class="corner br" viewBox="0 0 40 40"><path d="M4 36V8a4 4 0 0 1 4-4h28" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 32V12a2 2 0 0 1 2-2h18" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
-
-    <div class="card-top">
-      <div class="card-roman" id="c-roman">I</div>
-      <div class="card-title" id="c-title">语录体</div>
-    </div>
-
-    <div class="arch-frame">
-      <div class="card-center">
-        <svg class="sun" viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="1.2">
-          <circle cx="30" cy="30" r="10" fill="currentColor" fill-opacity=".15"/>
-          <path d="M30 6v8M30 46v8M6 30h8M46 30h8M14.1 14.1l5.7 5.7M40.2 40.2l5.7 5.7M14.1 45.9l5.7-5.7M40.2 19.8l5.7-5.7"/>
-          <circle cx="30" cy="30" r="4" fill="currentColor"/>
-        </svg>
-        <div class="card-text" id="c-text">点击「抽牌」开始</div>
-      </div>
-    </div>
-
-    <div class="card-bottom">
-      <div class="card-source" id="c-source">数据源：等待连接</div>
-      <div class="card-meta" id="c-meta"></div>
-    </div>
-  </div>
-</div>
-
-<div class="actions">
-  <button class="action" id="btn-gen">抽 牌</button>
-  <button class="action" id="btn-dl">下载神谕卡</button>
-  <button class="action" id="btn-copy">复制箴言</button>
-</div>
-
-<div class="toast" id="toast"></div>
-
 <script>
 const STYLE_NAMES = { verse: "语录体", liturgy: "礼赞体", poem: "诗词体", rap: "说唱体", blessing: "祈福体" };
 const STYLE_ROMAN = { verse: "I", liturgy: "II", poem: "III", rap: "IV", blessing: "V" };
-const STYLE_TITLES = { verse: "THE APHORISM", liturgy: "THE PRAYER", poem: "THE POEM", rap: "THE RHYME", blessing: "THE OMEN" };
-const STYLE_EMOJI = { verse: "📜", liturgy: "🕯️", poem: "🍂", rap: "🎤", blessing: "🌙" };
+const STYLE_TITLES = { verse: "THE GOLDEN ORACLE", liturgy: "THE CROWN FEAST", poem: "THE MOONLIT VERSE", rap: "THE RHYME CROWN", blessing: "THE GUARDIAN WISH" };
+const STYLE_PLAQUE_CN = { verse: "黄 金 神 谕", liturgy: "盛 典 赞 歌", poem: "月 下 诗 篇", rap: "节 奏 王 冠", blessing: "守 护 祈 愿" };
 let currentStyle = "verse";
 let currentCard = null;
+
+const SYMBOLS = {
+  verse: `<circle cx="60" cy="60" r="48" stroke-dasharray="4 4" opacity=".6"/>
+<path d="M60 18v12M60 90v12M18 60h12M90 60h12" opacity=".7"/>
+<path d="M60 38a8 8 0 0 0-8-8h-16a8 8 0 0 0-8 8v28a8 8 0 0 0 8 8h24a8 8 0 0 0 8-8V38z" fill="rgba(201,162,39,.12)"/>
+<ellipse cx="60" cy="58" rx="16" ry="10" fill="rgba(201,162,39,.2)"/>
+<path d="M60 42v32M52 50h16M52 58h16M52 66h16" opacity=".8"/>
+<path d="M48 78c0 8 5.4 14 12 14s12-6 12-14" fill="none"/>
+<circle cx="44" cy="44" r="3" fill="currentColor" opacity=".6"/>
+<circle cx="76" cy="44" r="3" fill="currentColor" opacity=".6"/>
+<path d="M32 86c8-6 16-8 28-8s20 2 28 8" fill="none" opacity=".5"/>`,
+  liturgy: `<circle cx="60" cy="60" r="48" stroke-dasharray="2 3" opacity=".5"/>
+<path d="M60 20l6 12h12l-10 8 4 12-12-8-12 8 4-12-10-8h12z" fill="rgba(201,162,39,.18)"/>
+<path d="M38 70c0-12 9.8-22 22-22s22 10 22 22v18H38V70z" fill="rgba(123,31,58,.08)"/>
+<path d="M38 70c0-8 9.8-14 22-14s22 6 22 14" fill="none"/>
+<path d="M45 88h30M48 80h24M52 72h16" opacity=".7"/>
+<circle cx="60" cy="58" r="6" fill="currentColor" opacity=".5"/>
+<path d="M24 60c10-4 20-6 36-6s26 2 36 6" fill="none" opacity=".4"/>`,
+  poem: `<circle cx="60" cy="60" r="48" opacity=".5"/>
+<circle cx="60" cy="45" r="14" fill="rgba(201,162,39,.12)"/>
+<path d="M46 45a14 14 0 0 1 28 0" fill="none"/>
+<circle cx="54" cy="42" r="2" fill="currentColor" opacity=".5"/>
+<circle cx="66" cy="42" r="2" fill="currentColor" opacity=".5"/>
+<path d="M60 100c-18-8-28-20-28-36 0-10 6-18 14-22M60 100c18-8 28-20 28-36 0-10-6-18-14-22" fill="none" opacity=".6"/>
+<path d="M30 92c10 6 20 8 30 8s20-2 30-8" fill="none" opacity=".4"/>
+<path d="M42 82c6 4 12 6 18 6s12-2 18-6" fill="none" opacity=".5"/>
+<path d="M35 54c-4-2-6-6-6-10M85 54c4-2 6-6 6-10" fill="none" opacity=".5"/>`,
+  rap: `<circle cx="60" cy="60" r="48" stroke-dasharray="3 5" opacity=".5"/>
+<rect x="48" y="32" width="24" height="44" rx="4" fill="rgba(201,162,39,.1)"/>
+<circle cx="60" cy="40" r="6" fill="rgba(201,162,39,.2)"/>
+<path d="M52 48h16M52 56h16M52 64h12" opacity=".7"/>
+<path d="M72 58l10-6v20l-10-6z" fill="rgba(123,31,58,.1)"/>
+<path d="M28 70c8-4 18-6 32-6s24 2 32 6" fill="none" opacity=".5"/>
+<path d="M24 78c10-4 22-6 36-6s26 2 36 6" fill="none" opacity=".4"/>
+<circle cx="34" cy="50" r="2" fill="currentColor" opacity=".5"/>
+<circle cx="86" cy="50" r="2" fill="currentColor" opacity=".5"/>`,
+  blessing: `<circle cx="60" cy="60" r="48" opacity=".5"/>
+<path d="M60 22c-14 0-24 10-24 24 0 14 24 40 24 40s24-26 24-40c0-14-10-24-24-24z" fill="rgba(201,162,39,.12)"/>
+<path d="M60 30c-10 0-18 7-18 16 0 9 18 28 18 28s18-19 18-28c0-9-8-16-18-16z" fill="rgba(123,31,58,.06)"/>
+<path d="M60 88v20M50 100h20" opacity=".6"/>
+<path d="M36 60c6-4 12-6 24-6s18 2 24 6" fill="none" opacity=".5"/>
+<path d="M30 72c8-4 18-6 30-6s22 2 30 6" fill="none" opacity=".4"/>
+<circle cx="60" cy="52" r="4" fill="currentColor" opacity=".4"/>
+<path d="M30 44c4-6 10-10 16-10M90 44c-4-6-10-10-16-10" fill="none" opacity=".5"/>`
+};
 
 const $ = (id) => document.getElementById(id);
 function toast(msg) {
@@ -244,85 +79,128 @@ async function loadStyles() {
     data.styles.forEach((key) => {
       const chip = document.createElement("button");
       chip.className = "style-chip" + (key === currentStyle ? " active" : "");
-      chip.innerHTML = `<span class="num">${STYLE_ROMAN[key]}</span>${STYLE_EMOJI[key]} ${STYLE_NAMES[key] || key}`;
+      chip.innerHTML = `<span class="num">${STYLE_ROMAN[key]}</span>${STYLE_NAMES[key] || key}`;
       chip.onclick = () => {
         currentStyle = key;
         box.querySelectorAll(".style-chip").forEach((c) => c.classList.remove("active"));
         chip.classList.add("active");
+        generate();
       };
       box.appendChild(chip);
     });
-    const st = $("status");
-    if (data.status && data.status.mcp) {
-      st.textContent = "已与麦当劳 MCP 建立神谕链接";
-      st.className = "status";
-    } else {
-      st.textContent = "离线占卜模式（未配置 Token）";
-      st.className = "status fallback";
-    }
   } catch (e) {
-    const st = $("status");
-    st.textContent = "无法连接神谕服务：请确认已运行 npm run web";
-    st.className = "status fallback";
-    toast("无法连接后端服务：" + e.message);
+    $("status").textContent = "无法连接服务";
+    $("status").classList.add("fallback");
   }
-}
-
-function renderCard(card) {
-  currentCard = card;
-  $("c-roman").textContent = STYLE_ROMAN[card.style] || "I";
-  $("c-title").textContent = STYLE_NAMES[card.style] || card.style;
-  $("c-title").dataset.en = STYLE_TITLES[card.style] || "THE ORACLE";
-  $("c-text").textContent = card.text;
-  const ctx = card.context || {};
-  const src = ctx.source === "mcp" ? "麦当劳 MCP 实时神谕" : "内置示例神谕";
-  $("c-source").textContent = "数据源：" + src;
-  $("c-meta").innerHTML = "圣餐：" + (ctx.dish || "—") + "<br>启示：" + (ctx.activity || "—");
 }
 
 async function generate() {
   const btn = $("btn-gen");
   btn.disabled = true;
-  btn.textContent = "占卜中…";
   try {
-    const card = await fetchJSON("/api/write", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ style: currentStyle }),
-    });
-    renderCard(card);
+    const data = await fetchJSON("/api/write?style=" + currentStyle);
+    currentCard = data;
+    renderCard(data);
   } catch (e) {
-    toast("占卜失败：" + e.message);
+    toast("生成失败：" + e.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = "抽 牌";
   }
 }
 
-const MATH_DIGITS = ["𝟘", "𝟙", "𝟚", "𝟛", "𝟜", "𝟝", "𝟞", "𝟟", "𝟠", "𝟡"];
-function normalizeDigits(s) {
-  return s.split("").map((c) => {
-    const i = MATH_DIGITS.indexOf(c);
-    return i >= 0 ? String(i) : c;
-  }).join("");
+function renderCard(card) {
+  const style = card.style || currentStyle;
+  $("c-roman").textContent = STYLE_ROMAN[style] || "I";
+  $("c-title").textContent = STYLE_NAMES[style] || style;
+  $("c-subtitle").textContent = STYLE_TITLES[style] || "THE ORACLE";
+  $("c-plaque-en").textContent = STYLE_TITLES[style] || "THE ORACLE";
+  $("c-plaque-cn").textContent = STYLE_PLAQUE_CN[style] || "麦 门 神 谕";
+  $("c-symbol").innerHTML = SYMBOLS[style] || SYMBOLS.verse;
+  $("c-text").textContent = normalizeDigits(card.text || "");
+  const ctx = card.context || {};
+  const src = ctx.source === "mcp" ? "麦当劳 MCP 实时神谕" : "内置示例神谕";
+  $("c-source").textContent = "数据源：" + src;
+  const status = $("status");
+  status.textContent = ctx.source === "mcp" ? "已连接麦当劳 MCP（实时数据）" : "示例模式（无 MCP 实时数据）";
+  status.classList.toggle("fallback", ctx.source !== "mcp");
 }
 
-function wrapText(ctx, text, maxWidth) {
-  const lines = [];
-  for (const para of String(text).split("\n")) {
-    if (!para) { lines.push(""); continue; }
+function normalizeDigits(s) {
+  return String(s).replace(/[0-9]/g, (d) => String.fromCharCode(0xFF10 + parseInt(d, 10)));
+}
+
+function wrapText(ctx, text, maxW) {
+  const paragraphs = text.split("\n");
+  const out = [];
+  for (const para of paragraphs) {
+    const words = para.split("");
     let line = "";
-    for (const ch of para) {
-      if (ctx.measureText(line + ch).width > maxWidth && line) {
-        lines.push(line);
+    for (const ch of words) {
+      const test = line + ch;
+      if (ctx.measureText(test).width > maxW && line) {
+        out.push(line);
         line = ch;
       } else {
-        line += ch;
+        line = test;
       }
     }
-    lines.push(line);
+    if (line) out.push(line);
   }
-  return lines;
+  return out;
+}
+
+function drawSymbolPath(ctx, style, cx, cy, size) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(size / 120, size / 120);
+  ctx.strokeStyle = "#8A6E1E";
+  ctx.fillStyle = "rgba(201,162,39,.12)";
+  ctx.lineWidth = 1.5;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  if (style === "verse") {
+    ctx.beginPath(); ctx.arc(60, 60, 48, 0, Math.PI * 2); ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(60, 18); ctx.lineTo(60, 30); ctx.moveTo(60, 90); ctx.lineTo(60, 102);
+    ctx.moveTo(18, 60); ctx.lineTo(30, 60); ctx.moveTo(90, 60); ctx.lineTo(102, 60); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(60, 38); ctx.bezierCurveTo(52, 30, 44, 30, 36, 38); ctx.lineTo(36, 66); ctx.bezierCurveTo(36, 74, 44, 74, 60, 74); ctx.bezierCurveTo(76, 74, 84, 74, 84, 66); ctx.lineTo(84, 38); ctx.bezierCurveTo(76, 30, 68, 30, 60, 38); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(60, 58, 16, 10, 0, 0, Math.PI * 2); ctx.fillStyle = "rgba(201,162,39,.2)"; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(60, 42); ctx.lineTo(60, 74); ctx.moveTo(52, 50); ctx.lineTo(68, 50); ctx.moveTo(52, 58); ctx.lineTo(68, 58); ctx.moveTo(52, 66); ctx.lineTo(68, 66); ctx.stroke();
+    ctx.beginPath(); ctx.arc(44, 44, 3, 0, Math.PI * 2); ctx.arc(76, 44, 3, 0, Math.PI * 2); ctx.fillStyle = "#8A6E1E"; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(32, 86); ctx.bezierCurveTo(40, 80, 48, 78, 60, 78); ctx.bezierCurveTo(72, 78, 80, 80, 88, 86); ctx.stroke();
+  } else if (style === "liturgy") {
+    ctx.beginPath(); ctx.arc(60, 60, 48, 0, Math.PI * 2); ctx.setLineDash([2, 3]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(60, 20); ctx.lineTo(66, 32); ctx.lineTo(78, 32); ctx.lineTo(68, 40); ctx.lineTo(72, 52); ctx.lineTo(60, 44); ctx.lineTo(48, 52); ctx.lineTo(52, 40); ctx.lineTo(42, 32); ctx.lineTo(54, 32); ctx.closePath(); ctx.fillStyle = "rgba(201,162,39,.18)"; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(38, 70); ctx.bezierCurveTo(38, 54, 47.5, 48, 60, 48); ctx.bezierCurveTo(72.5, 48, 82, 54, 82, 70); ctx.lineTo(82, 88); ctx.lineTo(38, 88); ctx.closePath(); ctx.fillStyle = "rgba(123,31,58,.08)"; ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(38, 70); ctx.bezierCurveTo(38, 62, 47.5, 56, 60, 56); ctx.bezierCurveTo(72.5, 56, 82, 62, 82, 70); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(45, 88); ctx.lineTo(75, 88); ctx.moveTo(48, 80); ctx.lineTo(72, 80); ctx.moveTo(52, 72); ctx.lineTo(68, 72); ctx.stroke();
+    ctx.beginPath(); ctx.arc(60, 58, 6, 0, Math.PI * 2); ctx.fillStyle = "#8A6E1E"; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(24, 60); ctx.bezierCurveTo(34, 56, 44, 54, 60, 54); ctx.bezierCurveTo(76, 54, 86, 56, 96, 60); ctx.stroke();
+  } else if (style === "poem") {
+    ctx.beginPath(); ctx.arc(60, 60, 48, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(60, 45, 14, 0, Math.PI * 2); ctx.fillStyle = "rgba(201,162,39,.12)"; ctx.fill();
+    ctx.beginPath(); ctx.arc(54, 42, 2, 0, Math.PI * 2); ctx.arc(66, 42, 2, 0, Math.PI * 2); ctx.fillStyle = "#8A6E1E"; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(60, 100); ctx.bezierCurveTo(42, 92, 32, 80, 32, 64); ctx.bezierCurveTo(32, 54, 38, 46, 46, 42); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(60, 100); ctx.bezierCurveTo(78, 92, 88, 80, 88, 64); ctx.bezierCurveTo(88, 54, 82, 46, 74, 42); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(30, 92); ctx.bezierCurveTo(40, 98, 50, 100, 60, 100); ctx.bezierCurveTo(70, 100, 80, 98, 90, 92); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(42, 82); ctx.bezierCurveTo(48, 86, 54, 88, 60, 88); ctx.bezierCurveTo(66, 88, 72, 86, 78, 82); ctx.stroke();
+  } else if (style === "rap") {
+    ctx.beginPath(); ctx.arc(60, 60, 48, 0, Math.PI * 2); ctx.setLineDash([3, 5]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.roundRect(48, 32, 24, 44, 4); ctx.fillStyle = "rgba(201,162,39,.1)"; ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(60, 40, 6, 0, Math.PI * 2); ctx.fillStyle = "rgba(201,162,39,.2)"; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(52, 48); ctx.lineTo(68, 48); ctx.moveTo(52, 56); ctx.lineTo(68, 56); ctx.moveTo(52, 64); ctx.lineTo(64, 64); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(72, 58); ctx.lineTo(82, 52); ctx.lineTo(82, 72); ctx.lineTo(72, 66); ctx.closePath(); ctx.fillStyle = "rgba(123,31,58,.1)"; ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(28, 70); ctx.bezierCurveTo(36, 66, 46, 64, 60, 64); ctx.bezierCurveTo(74, 64, 84, 66, 92, 70); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(24, 78); ctx.bezierCurveTo(34, 74, 46, 72, 60, 72); ctx.bezierCurveTo(74, 72, 86, 74, 96, 78); ctx.stroke();
+    ctx.beginPath(); ctx.arc(34, 50, 2, 0, Math.PI * 2); ctx.arc(86, 50, 2, 0, Math.PI * 2); ctx.fillStyle = "#8A6E1E"; ctx.fill();
+  } else if (style === "blessing") {
+    ctx.beginPath(); ctx.arc(60, 60, 48, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(60, 22); ctx.bezierCurveTo(46, 22, 36, 32, 36, 46); ctx.bezierCurveTo(36, 60, 60, 86, 60, 86); ctx.bezierCurveTo(60, 86, 84, 60, 84, 46); ctx.bezierCurveTo(84, 32, 74, 22, 60, 22); ctx.closePath(); ctx.fillStyle = "rgba(201,162,39,.12)"; ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(60, 30); ctx.bezierCurveTo(50, 30, 42, 37, 42, 46); ctx.bezierCurveTo(42, 55, 60, 74, 60, 74); ctx.bezierCurveTo(60, 74, 78, 55, 78, 46); ctx.bezierCurveTo(78, 37, 70, 30, 60, 30); ctx.closePath(); ctx.fillStyle = "rgba(123,31,58,.06)"; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(60, 88); ctx.lineTo(60, 108); ctx.moveTo(50, 100); ctx.lineTo(70, 100); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(36, 60); ctx.bezierCurveTo(42, 56, 48, 54, 60, 54); ctx.bezierCurveTo(72, 54, 78, 56, 84, 60); ctx.stroke();
+    ctx.beginPath(); ctx.arc(60, 52, 4, 0, Math.PI * 2); ctx.fillStyle = "#8A6E1E"; ctx.fill();
+  }
+  ctx.restore();
 }
 
 function drawCard(card) {
@@ -330,26 +208,32 @@ function drawCard(card) {
   const cv = document.createElement("canvas");
   cv.width = W; cv.height = H;
   const ctx = cv.getContext("2d");
+  const style = card.style || "verse";
 
-  // parchment background with noise
-  ctx.fillStyle = "#F3E6C8";
-  ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = "rgba(0,0,0,.04)";
-  for (let i = 0; i < 40000; i++) {
-    ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
-  }
-  ctx.fillStyle = "rgba(123,31,58,.03)";
+  // parchment
+  const bg = ctx.createRadialGradient(W * 0.35, H * 0.28, 0, W / 2, H / 2, W * 0.95);
+  bg.addColorStop(0, "#F9EFD6");
+  bg.addColorStop(0.4, "#F5E9CC");
+  bg.addColorStop(0.8, "#EAD5B0");
+  bg.addColorStop(1, "#DEC89C");
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  // border
+  // fine grain
+  ctx.fillStyle = "rgba(0,0,0,.02)";
+  for (let i = 0; i < 40000; i++) ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
+
+  // outer border
   ctx.strokeStyle = "#C9A227";
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 5;
   ctx.strokeRect(18, 18, W - 36, H - 36);
   ctx.strokeStyle = "#8A6E1E";
-  ctx.lineWidth = 1;
-  ctx.strokeRect(28, 28, W - 56, H - 56);
-  ctx.setLineDash([5, 5]);
-  ctx.strokeRect(38, 38, W - 76, H - 76);
+  ctx.lineWidth = 2;
+  ctx.strokeRect(26, 26, W - 52, H - 52);
+  ctx.setLineDash([10, 8]);
+  ctx.strokeStyle = "rgba(138,110,30,.45)";
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(36, 36, W - 72, H - 72);
   ctx.setLineDash([]);
 
   // corners
@@ -358,15 +242,14 @@ function drawCard(card) {
     ctx.translate(x, y);
     ctx.rotate(rot * Math.PI / 180);
     ctx.strokeStyle = "#7B1F3A";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, 30); ctx.lineTo(0, 8); ctx.lineTo(22, 8);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(6, 26); ctx.lineTo(6, 14); ctx.lineTo(16, 14);
-    ctx.stroke();
     ctx.fillStyle = "#7B1F3A";
-    ctx.beginPath(); ctx.arc(8, 8, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(0, 42); ctx.lineTo(0, 10); ctx.lineTo(32, 10); ctx.stroke();
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(8, 36); ctx.lineTo(8, 16); ctx.lineTo(26, 16); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(4, 22); ctx.quadraticCurveTo(12, 16, 18, 8); ctx.stroke();
+    ctx.beginPath(); ctx.arc(9, 9, 3, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   };
   drawCorner(22, 22, 0);
@@ -377,108 +260,95 @@ function drawCard(card) {
   const cx = W / 2;
   ctx.textAlign = "center";
 
-  // roman + style
+  // top numbering area
   ctx.fillStyle = "#7B1F3A";
-  ctx.font = "22px 'Cinzel', 'Times New Roman', serif";
-  ctx.fillText(STYLE_ROMAN[card.style] || "I", cx, 90);
-  ctx.font = "bold 24px 'Noto Serif SC', 'Songti SC', serif";
-  ctx.fillText(STYLE_NAMES[card.style] || card.style, cx, 128);
+  ctx.font = "38px 'Cinzel', 'Times New Roman', serif";
+  ctx.fillText(STYLE_ROMAN[style] || "I", cx, 105);
+  ctx.font = "bold 22px 'Noto Serif SC', 'Songti SC', serif";
+  ctx.fillText(STYLE_NAMES[style] || style, cx, 145);
+  ctx.font = "14px 'Cinzel', 'Times New Roman', serif";
+  ctx.fillStyle = "#8A6E1E";
+  ctx.fillText(STYLE_TITLES[style] || "THE ORACLE", cx, 172);
 
-  // arch frame
+  // central symbol frame
   ctx.strokeStyle = "#8A6E1E";
   ctx.lineWidth = 2;
-  const ax = 80, ay = 170, aw = W - 160, ah = 720;
-  ctx.beginPath();
-  ctx.ellipse(cx, ay + ah * 0.22, aw / 2, ah * 0.22, 0, Math.PI, 0);
-  ctx.lineTo(ax + aw, ay + ah);
-  ctx.lineTo(ax, ay + ah);
-  ctx.closePath();
-  ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, 380, 150, 0, Math.PI * 2); ctx.stroke();
   ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.ellipse(cx, ay + ah * 0.22, aw / 2 - 12, ah * 0.22 - 10, 0, Math.PI, 0);
-  ctx.lineTo(ax + aw - 12, ay + ah - 8);
-  ctx.lineTo(ax + 12, ay + ah - 8);
-  ctx.closePath();
-  ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, 380, 134, 0, Math.PI * 2); ctx.stroke();
+  const symGrad = ctx.createRadialGradient(cx, 380, 0, cx, 380, 150);
+  symGrad.addColorStop(0, "rgba(201,162,39,.08)");
+  symGrad.addColorStop(1, "transparent");
+  ctx.fillStyle = symGrad;
+  ctx.beginPath(); ctx.arc(cx, 380, 150, 0, Math.PI * 2); ctx.fill();
+  drawSymbolPath(ctx, style, cx, 380, 200);
 
-  // sun symbol
-  ctx.strokeStyle = "#C9A227";
-  ctx.fillStyle = "rgba(201,162,39,.15)";
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.arc(cx, 330, 36, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = "#C9A227";
-  ctx.beginPath(); ctx.arc(cx, 330, 10, 0, Math.PI * 2); ctx.fill();
-  for (let i = 0; i < 8; i++) {
-    const a = i * Math.PI / 4;
-    ctx.beginPath();
-    ctx.moveTo(cx + Math.cos(a) * 48, 330 + Math.sin(a) * 48);
-    ctx.lineTo(cx + Math.cos(a) * 62, 330 + Math.sin(a) * 62);
-    ctx.stroke();
-  }
-
-  // main text
+  // main text with quote marks
   ctx.fillStyle = "#2A2132";
-  ctx.font = "30px 'Noto Serif SC', 'Songti SC', serif";
-  const text = normalizeDigits(card.text);
-  const lines = wrapText(ctx, text, aw - 70);
-  const lineH = 52;
-  const startY = 560 + Math.max(0, (5 - lines.length) * lineH * 0.5);
+  ctx.font = "28px 'Noto Serif SC', 'Songti SC', serif";
+  const text = normalizeDigits(card.text || "");
+  const lines = wrapText(ctx, text, W - 180);
+  const lineH = 50;
+  const startY = 610 + Math.max(0, (6 - lines.length) * lineH * 0.5);
+  ctx.fillStyle = "#8A6E1E";
+  ctx.font = "30px 'Cinzel', serif";
+  ctx.fillText("“", 82, startY - 15);
+  ctx.fillText("”", W - 82, startY + (lines.length - 1) * lineH + 15);
+  ctx.fillStyle = "#2A2132";
+  ctx.font = "28px 'Noto Serif SC', 'Songti SC', serif";
   lines.forEach((ln, i) => ctx.fillText(ln, cx, startY + i * lineH));
 
-  // bottom
+  // bottom plaque
   const ctxInfo = card.context || {};
   const src = ctxInfo.source === "mcp" ? "麦当劳 MCP 实时神谕" : "内置示例神谕";
-  ctx.strokeStyle = "#DECAA0";
+  ctx.strokeStyle = "#8A6E1E";
   ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(ax + 30, H - 240);
-  ctx.lineTo(ax + aw - 30, H - 240);
-  ctx.stroke();
+  const pw = 360, ph = 64, px = cx - pw / 2, py = H - 220;
+  ctx.fillStyle = "rgba(201,162,39,.06)";
+  ctx.fillRect(px, py, pw, ph);
+  ctx.strokeRect(px, py, pw, ph);
+  ctx.beginPath(); ctx.moveTo(px, py + ph / 2); ctx.lineTo(px + pw, py + ph / 2); ctx.stroke();
+  ctx.fillStyle = "#7B1F3A";
+  ctx.font = "20px 'Cinzel', 'Times New Roman', serif";
+  ctx.fillText(STYLE_TITLES[style] || "THE ORACLE", cx, py + 28);
+  ctx.fillStyle = "#8A6E1E";
+  ctx.font = "16px 'Noto Serif SC', 'Songti SC', serif";
+  ctx.fillText(STYLE_PLAQUE_CN[style] || "麦 门 神 谕", cx, py + 52);
 
   ctx.fillStyle = "#8A7F68";
-  ctx.font = "18px 'Noto Serif SC', 'Songti SC', serif";
-  ctx.fillText("数据源：" + src, cx, H - 195);
-  ctx.font = "16px 'Noto Serif SC', 'Songti SC', serif";
-  ctx.fillText("圣餐：" + (ctxInfo.dish || "—") + "  ｜  启示：" + (ctxInfo.activity || "—"), cx, H - 155);
-  ctx.fillStyle = "#8A6E1E";
-  ctx.font = "16px 'Cinzel', 'Times New Roman', serif";
-  ctx.fillText("THE MCMEN ORACLE", cx, H - 88);
+  ctx.font = "15px 'Noto Serif SC', 'Songti SC', serif";
+  ctx.fillText("数据源：" + src, cx, H - 120);
   ctx.font = "13px 'Noto Serif SC', serif";
-  ctx.fillText("麦门文学生成器 · mcd-skill", cx, H - 62);
+  ctx.fillText("圣餐：" + (ctxInfo.dish || "—") + "  ｜  启示：" + (ctxInfo.activity || "—"), cx, H - 92);
+
+  // vignette
+  const g = ctx.createRadialGradient(cx, H / 2, W * 0.4, cx, H / 2, W * 0.85);
+  g.addColorStop(0, "rgba(60,42,28,0)");
+  g.addColorStop(1, "rgba(60,42,28,.18)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
 
   return cv.toDataURL("image/png");
 }
 
-function download() {
-  if (!currentCard) return toast("请先生成一张神谕卡");
-  try {
-    const a = document.createElement("a");
-    a.download = "麦门神谕-" + currentCard.style + ".png";
-    a.href = drawCard(currentCard);
-    a.click();
-    toast("神谕卡已下载");
-  } catch (e) {
-    toast("导出失败：" + e.message);
-  }
-}
-
-async function copyText() {
-  if (!currentCard) return toast("请先生成一张神谕卡");
-  try {
-    await navigator.clipboard.writeText(currentCard.text);
-    toast("箴言已复制");
-  } catch {
-    toast("复制失败，请手动选择文字");
-  }
-}
-
 $("btn-gen").onclick = generate;
-$("btn-dl").onclick = download;
-$("btn-copy").onclick = copyText;
+$("btn-copy").onclick = () => {
+  if (!currentCard) return toast("请先抽牌");
+  navigator.clipboard.writeText(normalizeDigits(currentCard.text || "")).then(() => toast("箴言已复制"));
+};
+$("btn-dl").onclick = () => {
+  if (!currentCard) return toast("请先抽牌");
+  const a = document.createElement("a");
+  a.href = drawCard(currentCard);
+  a.download = `mcmen-oracle-${currentCard.style}-${Date.now()}.png`;
+  a.click();
+};
 
-loadStyles();
-generate();
+async function init() {
+  await loadStyles();
+  generate();
+}
+init();
 </script>
 </body>
 </html>
