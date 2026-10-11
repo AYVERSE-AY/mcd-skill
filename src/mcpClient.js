@@ -14,7 +14,7 @@ export class McdMCP {
         headers: { Authorization: `Bearer ${token}` },
       },
     });
-    const client = new Client({ name: "mcd-skill", version: "0.1.0" });
+    const client = new Client({ name: "mcd-skill", version: "0.2.0" });
     await client.connect(transport);
     this.client = client;
     return this;
