@@ -5,91 +5,96 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>麦门神谕 · The McMen Oracle</title>
 <style>
-  @font-face {
-    font-family: "Cinzel";
-    src: local("Cinzel"), local("Cinzel-Regular");
-  }
+  @font-face { font-family: "Cinzel"; src: local("Cinzel"), local("Cinzel-Regular"); }
   :root {
-    --navy: #0B0F26;
-    --navy-light: #151B3D;
+    --navy: #080B1A;
+    --navy-light: #11163A;
     --gold: #C9A227;
     --gold-light: #E6C96B;
-    --gold-dim: #8A6E1E;
-    --parchment: #F3E6C8;
-    --parchment-dim: #DECAA0;
-    --crimson: #7B1F3A;
-    --ink: #2A2132;
-    --muted: #8A7F68;
+    --gold-dim: #755D16;
+    --parchment: #E9D9B0;
+    --parchment-dark: #D4C298;
+    --parchment-dim: #B8A982;
+    --crimson: #6B1A30;
+    --ink: #241B28;
+    --muted: #7A6E57;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun", "Georgia", serif;
-    background: var(--navy) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+    background:
+      radial-gradient(circle at 50% 35%, transparent 0%, var(--navy) 75%, #02030A 100%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.10'/%3E%3C/svg%3E"),
+      linear-gradient(170deg, #0D1230 0%, #050714 60%, #02030A 100%);
     color: var(--parchment);
     min-height: 100vh;
     display: flex; flex-direction: column; align-items: center;
     padding: 24px 12px 40px;
     overflow-x: hidden;
   }
-  header { text-align: center; margin-bottom: 18px; position: relative; }
-  .sigil {
-    width: 64px; height: 64px; margin: 0 auto 10px;
-    color: var(--gold);
-  }
+  header { text-align: center; margin-bottom: 18px; position: relative; z-index: 1; }
+  .sigil { width: 64px; height: 64px; margin: 0 auto 10px; color: var(--gold); filter: drop-shadow(0 0 8px rgba(201,162,39,.25)); }
   h1 {
     font-family: "Cinzel", "Trajan Pro", "Times New Roman", serif;
-    font-size: 28px; letter-spacing: 4px; font-weight: 400;
+    font-size: 27px; letter-spacing: 4px; font-weight: 400;
     color: var(--gold-light); text-transform: uppercase;
+    text-shadow: 0 2px 18px rgba(201,162,39,.18);
   }
-  h1 small {
-    display: block; font-size: 13px; letter-spacing: 8px; color: var(--parchment-dim);
-    margin-top: 6px; font-family: "Noto Serif SC", serif; text-transform: none;
-  }
+  h1 small { display: block; font-size: 13px; letter-spacing: 9px; color: var(--parchment-dim); margin-top: 6px; font-family: "Noto Serif SC", serif; text-transform: none; }
   .status {
-    display: inline-block; margin-top: 12px; font-size: 12px; letter-spacing: 1px;
+    display: inline-block; margin-top: 12px; font-size: 11px; letter-spacing: 1.5px;
     padding: 5px 14px; border: 1px solid var(--gold-dim); color: var(--gold);
-    background: rgba(201,162,39,0.08);
+    background: rgba(201,162,39,0.07);
   }
-  .status.fallback { color: var(--parchment-dim); border-color: var(--muted); background: rgba(243,230,200,0.06); }
+  .status.fallback { color: var(--parchment-dim); border-color: var(--muted); background: rgba(243,230,200,0.05); }
   .styles { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 18px 0 22px; }
   .style-chip {
-    background: transparent; border: 1px solid var(--gold-dim); color: var(--parchment-dim);
+    background: rgba(14,19,46,.55); border: 1px solid var(--gold-dim); color: var(--parchment-dim);
     padding: 8px 12px; cursor: pointer; font-size: 13px; letter-spacing: 1px;
     font-family: inherit; transition: .2s; min-width: 84px;
   }
   .style-chip:hover { border-color: var(--gold); color: var(--gold-light); }
-  .style-chip.active {
-    background: rgba(201,162,39,0.14); border-color: var(--gold); color: var(--gold-light);
-    box-shadow: 0 0 0 1px var(--gold-dim);
-  }
+  .style-chip.active { background: rgba(201,162,39,.14); border-color: var(--gold); color: var(--gold-light); box-shadow: 0 0 0 1px var(--gold-dim); }
   .style-chip .num { display: block; font-family: "Cinzel", serif; font-size: 10px; color: var(--gold-dim); margin-bottom: 2px; }
   .card-wrap {
-    width: min(420px, 92vw); position: relative; filter: drop-shadow(0 20px 50px rgba(0,0,0,.55));
+    width: min(420px, 92vw); position: relative;
+    filter: drop-shadow(0 24px 60px rgba(0,0,0,.65));
   }
   .card {
     aspect-ratio: 2 / 3.5;
-    background: var(--parchment) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.07'/%3E%3C/svg%3E");
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255,248,220,.22) 0%, transparent 42%),
+      radial-gradient(circle at 75% 70%, rgba(139,90,43,.10) 0%, transparent 35%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.10'/%3E%3C/svg%3E"),
+      var(--parchment);
     color: var(--ink);
-    border: 2px solid var(--gold);
     display: flex; flex-direction: column; align-items: center;
     padding: 5.5% 6% 5%;
     position: relative; overflow: hidden;
-    box-shadow: inset 0 0 60px rgba(123,31,58,.08);
+    clip-path: polygon(2% 0, 98% 1%, 100% 2%, 100% 98%, 98% 100%, 2% 99%, 0 98%, 0 2%);
+    box-shadow: inset 0 0 90px rgba(80,50,30,.18);
   }
-  .card::before, .card::after {
-    content: ""; position: absolute; inset: 8px;
-    border: 1px solid var(--gold-dim); pointer-events: none;
+  .card::before {
+    content: "";
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(circle at 50% 50%, transparent 50%, rgba(70,45,25,.28) 100%);
   }
-  .card::after {
-    inset: 14px; border-style: dashed; opacity: .45;
+  .card-border {
+    position: absolute; inset: 7px; pointer-events: none; z-index: 1;
+    fill: none; stroke: var(--gold); stroke-width: 2.2;
+    filter: drop-shadow(0 0 1px rgba(201,162,39,.35));
+  }
+  .card-inner-line {
+    position: absolute; inset: 18px; pointer-events: none; z-index: 1;
+    border: 1px dashed var(--gold-dim); opacity: .45;
   }
   .corner {
-    position: absolute; width: 38px; height: 38px; color: var(--crimson);
-    pointer-events: none; opacity: .9;
+    position: absolute; width: 42px; height: 42px; color: var(--crimson);
+    pointer-events: none; opacity: .88; z-index: 2;
   }
-  .corner.tl { top: 10px; left: 10px; transform: rotate(0); }
+  .corner.tl { top: 10px; left: 10px; }
   .corner.tr { top: 10px; right: 10px; transform: rotate(90deg); }
-  .corner.bl { bottom: 10px; left: 10px; transform: rotate(270deg); }
+  .corner.bl { bottom: 10px; left: 10px; transform: rotate(-90deg); }
   .corner.br { bottom: 10px; right: 10px; transform: rotate(180deg); }
   .arch-frame {
     width: 100%; aspect-ratio: 1 / 1.18;
@@ -97,47 +102,32 @@
     border-radius: 50% 50% 4px 4px / 30% 30% 4px 4px;
     display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
     padding: 14% 8% 8%; position: relative; margin-bottom: 5%;
-    background: linear-gradient(180deg, rgba(201,162,39,.06) 0%, transparent 55%);
+    background: linear-gradient(180deg, rgba(201,162,39,.05) 0%, transparent 55%);
   }
   .arch-frame::before {
     content: ""; position: absolute; inset: 5px; border: 1px solid var(--gold-dim);
     border-radius: 50% 50% 4px 4px / 30% 30% 4px 4px; opacity: .5;
   }
-  .card-top {
-    text-align: center; width: 100%; margin-bottom: 8%;
-  }
-  .card-roman {
-    font-family: "Cinzel", serif; font-size: 13px; letter-spacing: 2px; color: var(--crimson);
-    margin-bottom: 4px;
-  }
-  .card-title {
-    font-size: 15px; letter-spacing: 3px; color: var(--crimson);
-    font-weight: 700;
-  }
-  .card-center {
-    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    width: 100%; text-align: center;
-  }
-  .sun {
-    width: 56px; height: 56px; color: var(--gold); margin-bottom: 8%;
-  }
+  .card-top { text-align: center; width: 100%; margin-bottom: 8%; position: relative; z-index: 2; }
+  .card-roman { font-family: "Cinzel", serif; font-size: 13px; letter-spacing: 2px; color: var(--crimson); margin-bottom: 4px; }
+  .card-title { font-size: 15px; letter-spacing: 3px; color: var(--crimson); font-weight: 700; }
+  .card-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; position: relative; z-index: 2; }
+  .sun { width: 58px; height: 58px; color: var(--gold); margin-bottom: 8%; filter: drop-shadow(0 0 6px rgba(201,162,39,.25)); }
   .card-text {
     font-size: clamp(15px, 4.4vw, 19px); line-height: 2; letter-spacing: 1px;
-    white-space: pre-line; width: 100%;
+    white-space: pre-line; width: 100%; color: var(--ink);
+    text-shadow: 0 0 1px rgba(36,27,40,.06);
   }
-  .card-bottom {
-    width: 100%; text-align: center; margin-top: auto; padding-top: 6%;
-    border-top: 1px solid var(--parchment-dim);
-  }
-  .card-source {
-    font-size: 11px; letter-spacing: 1px; color: var(--muted); margin-bottom: 4px;
-  }
-  .card-meta {
-    font-size: 10px; letter-spacing: .5px; color: var(--muted); line-height: 1.7;
+  .card-bottom { width: 100%; text-align: center; margin-top: auto; padding-top: 6%; border-top: 1px solid var(--parchment-dim); position: relative; z-index: 2; }
+  .card-source { font-size: 11px; letter-spacing: 1px; color: var(--muted); margin-bottom: 4px; }
+  .card-meta { font-size: 10px; letter-spacing: .5px; color: var(--muted); line-height: 1.7; }
+  .stain {
+    position: absolute; border-radius: 50%; pointer-events: none; z-index: 0;
+    background: radial-gradient(circle, rgba(139,90,43,.18) 0%, transparent 70%);
   }
   .actions { display: flex; gap: 12px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
   button.action {
-    border: 1px solid var(--gold-dim); background: transparent; color: var(--gold);
+    border: 1px solid var(--gold-dim); background: rgba(14,19,46,.55); color: var(--gold);
     padding: 11px 22px; font-size: 14px; letter-spacing: 1px; cursor: pointer;
     font-family: inherit; transition: .2s;
   }
@@ -172,10 +162,19 @@
 
 <div class="card-wrap">
   <div class="card" id="card">
-    <svg class="corner tl" viewBox="0 0 40 40"><path d="M4 36V8a4 4 0 0 1 4-4h28" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 32V12a2 2 0 0 1 2-2h18" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
-    <svg class="corner tr" viewBox="0 0 40 40"><path d="M4 36V8a4 4 0 0 1 4-4h28" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 32V12a2 2 0 0 1 2-2h18" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
-    <svg class="corner bl" viewBox="0 0 40 40"><path d="M4 36V8a4 4 0 0 1 4-4h28" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 32V12a2 2 0 0 1 2-2h18" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
-    <svg class="corner br" viewBox="0 0 40 40"><path d="M4 36V8a4 4 0 0 1 4-4h28" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 32V12a2 2 0 0 1 2-2h18" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
+    <svg class="card-border" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <path d="M1.5,4 Q1.5,1.5 4,1.5 L96,1.5 Q98.5,1.5 98.5,4 L98.5,96 Q98.5,98.5 96,98.5 L4,98.5 Q1.5,98.5 1.5,96 Z" vector-effect="non-scaling-stroke"/>
+    </svg>
+    <div class="card-inner-line"></div>
+
+    <div class="stain" style="width:110px;height:90px;top:12%;left:8%;transform:rotate(25deg)"></div>
+    <div class="stain" style="width:80px;height:70px;bottom:18%;right:10%;transform:rotate(-15deg)"></div>
+    <div class="stain" style="width:50px;height:50px;top:45%;right:6%;transform:rotate(40deg)"></div>
+
+    <svg class="corner tl" viewBox="0 0 44 44"><path d="M4 40V8a4 4 0 0 1 4-4h32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M9 35V12a2 2 0 0 1 2-2h20" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><circle cx="9" cy="9" r="2.5" fill="currentColor"/></svg>
+    <svg class="corner tr" viewBox="0 0 44 44"><path d="M4 40V8a4 4 0 0 1 4-4h32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M9 35V12a2 2 0 0 1 2-2h20" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><circle cx="9" cy="9" r="2.5" fill="currentColor"/></svg>
+    <svg class="corner bl" viewBox="0 0 44 44"><path d="M4 40V8a4 4 0 0 1 4-4h32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M9 35V12a2 2 0 0 1 2-2h20" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><circle cx="9" cy="9" r="2.5" fill="currentColor"/></svg>
+    <svg class="corner br" viewBox="0 0 44 44"><path d="M4 40V8a4 4 0 0 1 4-4h32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M9 35V12a2 2 0 0 1 2-2h20" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><circle cx="9" cy="9" r="2.5" fill="currentColor"/></svg>
 
     <div class="card-top">
       <div class="card-roman" id="c-roman">I</div>
@@ -185,8 +184,8 @@
     <div class="arch-frame">
       <div class="card-center">
         <svg class="sun" viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="1.2">
-          <circle cx="30" cy="30" r="10" fill="currentColor" fill-opacity=".15"/>
-          <path d="M30 6v8M30 46v8M6 30h8M46 30h8M14.1 14.1l5.7 5.7M40.2 40.2l5.7 5.7M14.1 45.9l5.7-5.7M40.2 19.8l5.7-5.7"/>
+          <circle cx="30" cy="30" r="10" fill="currentColor" fill-opacity=".12"/>
+          <path d="M30 5v9M30 46v9M5 30h9M46 30h9M13.6 13.6l6.4 6.4M40 40l6.4 6.4M13.6 46.4l6.4-6.4M40 20l6.4-6.4"/>
           <circle cx="30" cy="30" r="4" fill="currentColor"/>
         </svg>
         <div class="card-text" id="c-text">点击「抽牌」开始</div>
@@ -272,7 +271,6 @@ function renderCard(card) {
   currentCard = card;
   $("c-roman").textContent = STYLE_ROMAN[card.style] || "I";
   $("c-title").textContent = STYLE_NAMES[card.style] || card.style;
-  $("c-title").dataset.en = STYLE_TITLES[card.style] || "THE ORACLE";
   $("c-text").textContent = card.text;
   const ctx = card.context || {};
   const src = ctx.source === "mcp" ? "麦当劳 MCP 实时神谕" : "内置示例神谕";
@@ -325,31 +323,127 @@ function wrapText(ctx, text, maxWidth) {
   return lines;
 }
 
+function wobblePath(w, h, amp) {
+  let d = `M${amp},${amp} `;
+  const step = 30, jitter = () => (Math.random() - 0.5) * amp;
+  for (let x = step; x <= w - step; x += step) d += `L${x + jitter()},${amp + jitter()} `;
+  d += `L${w - amp + jitter()},${amp + jitter()} `;
+  for (let y = step; y <= h - step; y += step) d += `L${w - amp + jitter()},${y + jitter()} `;
+  d += `L${w - amp + jitter()},${h - amp + jitter()} `;
+  for (let x = w - step; x >= step; x -= step) d += `L${x + jitter()},${h - amp + jitter()} `;
+  d += `L${amp + jitter()},${h - amp + jitter()} `;
+  for (let y = h - step; y >= step; y -= step) d += `L${amp + jitter()},${y + jitter()} `;
+  d += "Z";
+  return d;
+}
+
+function randomBlob(ctx, x, y, r, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(1, 0.7 + Math.random() * 0.5);
+  ctx.beginPath();
+  for (let i = 0; i <= 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    const rr = r * (0.7 + Math.random() * 0.6);
+    const px = Math.cos(a) * rr, py = Math.sin(a) * rr;
+    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.filter = "blur(10px)";
+  ctx.fill();
+  ctx.restore();
+}
+
+function fiberTexture(ctx, w, h) {
+  ctx.save();
+  ctx.strokeStyle = "rgba(80,60,35,0.04)";
+  ctx.lineWidth = 0.6;
+  for (let i = 0; i < 220; i++) {
+    const x = Math.random() * w, y = Math.random() * h;
+    const len = 10 + Math.random() * 30;
+    const ang = Math.random() * Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + Math.cos(ang) * len, y + Math.sin(ang) * len);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function inkSplatter(ctx, w, h) {
+  ctx.save();
+  for (let i = 0; i < 35; i++) {
+    const x = Math.random() * w, y = Math.random() * h;
+    const r = 1 + Math.random() * 3;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(36,27,40,${0.05 + Math.random() * 0.1})`;
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function vignette(ctx, w, h) {
+  const g = ctx.createRadialGradient(w / 2, h / 2, w * 0.35, w / 2, h / 2, w * 0.85);
+  g.addColorStop(0, "rgba(70,45,25,0)");
+  g.addColorStop(1, "rgba(70,45,25,.32)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+}
+
 function drawCard(card) {
   const W = 720, H = 1260;
   const cv = document.createElement("canvas");
   cv.width = W; cv.height = H;
   const ctx = cv.getContext("2d");
 
-  // parchment background with noise
-  ctx.fillStyle = "#F3E6C8";
-  ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = "rgba(0,0,0,.04)";
-  for (let i = 0; i < 40000; i++) {
-    ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
-  }
-  ctx.fillStyle = "rgba(123,31,58,.03)";
+  // base parchment with uneven yellowing
+  const bg = ctx.createRadialGradient(W * 0.3, H * 0.25, 0, W / 2, H / 2, W * 0.9);
+  bg.addColorStop(0, "#F7EBC8");
+  bg.addColorStop(0.45, "#E9D9B0");
+  bg.addColorStop(0.85, "#DCCBA2");
+  bg.addColorStop(1, "#CBB98F");
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  // border
+  // large soft stains
+  randomBlob(ctx, W * 0.22, H * 0.18, 70, "rgba(139,90,43,0.14)");
+  randomBlob(ctx, W * 0.78, H * 0.74, 55, "rgba(139,90,43,0.11)");
+  randomBlob(ctx, W * 0.88, H * 0.42, 38, "rgba(120,80,40,0.09)");
+  randomBlob(ctx, W * 0.12, H * 0.62, 42, "rgba(150,100,50,0.07)");
+
+  // fibers and ink
+  fiberTexture(ctx, W, H);
+  inkSplatter(ctx, W, H);
+
+  // noise
+  ctx.fillStyle = "rgba(0,0,0,.03)";
+  for (let i = 0; i < 60000; i++) ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
+
+  // wobbly hand-drawn outer border
+  ctx.save();
+  ctx.beginPath();
+  const outer = new Path2D(wobblePath(W, H, 22));
+  ctx.clip(outer);
+  ctx.fillStyle = "#E9D9B0";
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+
   ctx.strokeStyle = "#C9A227";
-  ctx.lineWidth = 4;
-  ctx.strokeRect(18, 18, W - 36, H - 36);
+  ctx.lineWidth = 3.5;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.stroke(new Path2D(wobblePath(W, H, 22)));
+
   ctx.strokeStyle = "#8A6E1E";
+  ctx.lineWidth = 1.2;
+  ctx.stroke(new Path2D(wobblePath(W, H, 36)));
+
+  // dashed inner line
+  ctx.setLineDash([8, 6]);
+  ctx.strokeStyle = "rgba(117,93,22,.55)";
   ctx.lineWidth = 1;
-  ctx.strokeRect(28, 28, W - 56, H - 56);
-  ctx.setLineDash([5, 5]);
-  ctx.strokeRect(38, 38, W - 76, H - 76);
+  ctx.stroke(new Path2D(wobblePath(W, H, 50)));
   ctx.setLineDash([]);
 
   // corners
@@ -357,37 +451,35 @@ function drawCard(card) {
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(rot * Math.PI / 180);
-    ctx.strokeStyle = "#7B1F3A";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, 30); ctx.lineTo(0, 8); ctx.lineTo(22, 8);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(6, 26); ctx.lineTo(6, 14); ctx.lineTo(16, 14);
-    ctx.stroke();
-    ctx.fillStyle = "#7B1F3A";
+    ctx.strokeStyle = "#6B1A30";
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(0, 34); ctx.lineTo(0, 8); ctx.lineTo(26, 8); ctx.stroke();
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(7, 29); ctx.lineTo(7, 14); ctx.lineTo(20, 14); ctx.stroke();
+    ctx.fillStyle = "#6B1A30";
     ctx.beginPath(); ctx.arc(8, 8, 3, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   };
-  drawCorner(22, 22, 0);
-  drawCorner(W - 22, 22, 90);
-  drawCorner(W - 22, H - 22, 180);
-  drawCorner(22, H - 22, 270);
+  drawCorner(24, 24, 0);
+  drawCorner(W - 24, 24, 90);
+  drawCorner(W - 24, H - 24, 180);
+  drawCorner(24, H - 24, 270);
 
   const cx = W / 2;
   ctx.textAlign = "center";
 
   // roman + style
-  ctx.fillStyle = "#7B1F3A";
+  ctx.fillStyle = "#6B1A30";
   ctx.font = "22px 'Cinzel', 'Times New Roman', serif";
-  ctx.fillText(STYLE_ROMAN[card.style] || "I", cx, 90);
-  ctx.font = "bold 24px 'Noto Serif SC', 'Songti SC', serif";
-  ctx.fillText(STYLE_NAMES[card.style] || card.style, cx, 128);
+  ctx.fillText(STYLE_ROMAN[card.style] || "I", cx, 95);
+  ctx.font = "bold 25px 'Noto Serif SC', 'Songti SC', serif";
+  ctx.fillText(STYLE_NAMES[card.style] || card.style, cx, 135);
 
   // arch frame
-  ctx.strokeStyle = "#8A6E1E";
+  ctx.strokeStyle = "#755D16";
   ctx.lineWidth = 2;
-  const ax = 80, ay = 170, aw = W - 160, ah = 720;
+  const ax = 84, ay = 175, aw = W - 168, ah = 720;
   ctx.beginPath();
   ctx.ellipse(cx, ay + ah * 0.22, aw / 2, ah * 0.22, 0, Math.PI, 0);
   ctx.lineTo(ax + aw, ay + ah);
@@ -404,48 +496,50 @@ function drawCard(card) {
 
   // sun symbol
   ctx.strokeStyle = "#C9A227";
-  ctx.fillStyle = "rgba(201,162,39,.15)";
+  ctx.fillStyle = "rgba(201,162,39,.12)";
   ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.arc(cx, 330, 36, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, 335, 36, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
   ctx.fillStyle = "#C9A227";
-  ctx.beginPath(); ctx.arc(cx, 330, 10, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx, 335, 10, 0, Math.PI * 2); ctx.fill();
   for (let i = 0; i < 8; i++) {
     const a = i * Math.PI / 4;
     ctx.beginPath();
-    ctx.moveTo(cx + Math.cos(a) * 48, 330 + Math.sin(a) * 48);
-    ctx.lineTo(cx + Math.cos(a) * 62, 330 + Math.sin(a) * 62);
+    ctx.moveTo(cx + Math.cos(a) * 48, 335 + Math.sin(a) * 48);
+    ctx.lineTo(cx + Math.cos(a) * 63, 335 + Math.sin(a) * 63);
     ctx.stroke();
   }
 
   // main text
-  ctx.fillStyle = "#2A2132";
+  ctx.fillStyle = "#241B28";
   ctx.font = "30px 'Noto Serif SC', 'Songti SC', serif";
   const text = normalizeDigits(card.text);
   const lines = wrapText(ctx, text, aw - 70);
   const lineH = 52;
-  const startY = 560 + Math.max(0, (5 - lines.length) * lineH * 0.5);
+  const startY = 565 + Math.max(0, (5 - lines.length) * lineH * 0.5);
   lines.forEach((ln, i) => ctx.fillText(ln, cx, startY + i * lineH));
 
   // bottom
   const ctxInfo = card.context || {};
   const src = ctxInfo.source === "mcp" ? "麦当劳 MCP 实时神谕" : "内置示例神谕";
-  ctx.strokeStyle = "#DECAA0";
+  ctx.strokeStyle = "#B8A982";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(ax + 30, H - 240);
-  ctx.lineTo(ax + aw - 30, H - 240);
+  ctx.moveTo(ax + 30, H - 250);
+  ctx.lineTo(ax + aw - 30, H - 250);
   ctx.stroke();
 
-  ctx.fillStyle = "#8A7F68";
+  ctx.fillStyle = "#7A6E57";
   ctx.font = "18px 'Noto Serif SC', 'Songti SC', serif";
-  ctx.fillText("数据源：" + src, cx, H - 195);
+  ctx.fillText("数据源：" + src, cx, H - 205);
   ctx.font = "16px 'Noto Serif SC', 'Songti SC', serif";
-  ctx.fillText("圣餐：" + (ctxInfo.dish || "—") + "  ｜  启示：" + (ctxInfo.activity || "—"), cx, H - 155);
-  ctx.fillStyle = "#8A6E1E";
+  ctx.fillText("圣餐：" + (ctxInfo.dish || "—") + "  ｜  启示：" + (ctxInfo.activity || "—"), cx, H - 165);
+  ctx.fillStyle = "#755D16";
   ctx.font = "16px 'Cinzel', 'Times New Roman', serif";
-  ctx.fillText("THE MCMEN ORACLE", cx, H - 88);
+  ctx.fillText("THE MCMEN ORACLE", cx, H - 95);
   ctx.font = "13px 'Noto Serif SC', serif";
-  ctx.fillText("麦门文学生成器 · mcd-skill", cx, H - 62);
+  ctx.fillText("麦门文学生成器 · mcd-skill", cx, H - 68);
+
+  vignette(ctx, W, H);
 
   return cv.toDataURL("image/png");
 }
