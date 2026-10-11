@@ -15,10 +15,20 @@ function extractData(text) {
 }
 
 // 解析营养信息的紧凑 TOON 格式，转成对象数组
-// 示例: [1]{productName,nutritionDescription,energyKj,energyKcal,protein,fat,carbohydrate,sodium,calcium}:\n 猪柳麦满分,null,1288,308,16,16,24,781,213
+// 兼容两种返回：纯 TOON 文本，以及「外层 Markdown 内嵌 JSON，data 字段为 TOON 字符串」
+// TOON 示例: [160]{productName,nutritionDescription,energyKj,energyKcal,protein,fat,carbohydrate,sodium,calcium}:\n 猪柳麦满分,null,1288,308,16,16,24,781,213
 function parseNutrition(text) {
   const data = extractData(text);
-  const raw = typeof data === "string" ? data : String(data ?? "");
+  let raw = typeof data === "string" ? data : String(data ?? "");
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    try {
+      const obj = JSON.parse(jsonMatch[0]);
+      if (typeof obj?.data === "string") raw = obj.data;
+    } catch {
+      /* 非 JSON 外壳，直接按原文本解析 */
+    }
+  }
   const headerMatch = raw.match(/\{(.+?)\}/);
   if (!headerMatch) return [];
   const fields = headerMatch[1].split(",");
@@ -37,6 +47,21 @@ function parseNutrition(text) {
 }
 
 const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+// 解析活动列表：兼容 JSON 数组 与 campaign-calendar 的 Markdown 文本格式
+// Markdown 示例：-   **活动标题**：超值9.9元早餐两件套陪你开工啦😋
+function parseCampaigns(text) {
+  const data = extractData(text);
+  const toItem = (x) => ({
+    title: x.title ?? x.name ?? x.subject ?? "未命名活动",
+    date: x.startDate ?? x.start_time ?? x.date ?? "",
+  });
+  if (Array.isArray(data)) return data.map(toItem);
+  if (Array.isArray(data?.activities)) return data.activities.map(toItem);
+  const raw = typeof data === "string" ? data : String(data ?? "");
+  const titles = [...raw.matchAll(/\*\*活动标题\*\*[：:]\s*(.+)/g)].map((m) => m[1].trim());
+  return titles.map((title) => ({ title, date: "" }));
+}
 
 export class McMenuWriter {
   constructor() {
@@ -68,12 +93,7 @@ export class McMenuWriter {
     if (!this.mcpOk) return [];
     try {
       const text = await this.mcp.call("campaign-calendar");
-      const data = extractData(text);
-      const list = Array.isArray(data?.activities) ? data.activities : Array.isArray(data) ? data : [];
-      return list.map((x) => ({
-        title: x.title ?? x.name ?? x.subject ?? "未命名活动",
-        date: x.startDate ?? x.start_time ?? x.date ?? "",
-      }));
+      return parseCampaigns(text);
     } catch {
       return [];
     }
