@@ -1,55 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>麦门神谕 · 每日麦门决策助手</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #1a1c2e;
+  --card-bg: #f5e9cc;
+  --gold: #c9a227;
+  --gold-dark: #8a6e1e;
+  --wine: #7b1f3a;
+  --ink: #2a2132;
+  --parchment: #f9efd6;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at 30% 20%, #252844 0%, #151727 60%, #0d0f1c 100%);
+  color: var(--parchment);
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 40px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+header h1 {
+  font-family: "Cinzel", "Times New Roman", serif;
+  font-size: 2.2rem;
+  margin: 0 0 6px;
+  letter-spacing: 4px;
+  color: var(--gold);
+  text-shadow: 0 2px 12px rgba(201,162,39,.35);
+}
+
+header p {
+  margin: 0;
+  opacity: .85;
+  font-size: .95rem;
+}
+
+#status {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: .8rem;
+  background: rgba(201,162,39,.15);
+  border: 1px solid rgba(201,162,39,.35);
+  color: var(--gold);
+}
+#status.fallback {
+  background: rgba(180,180,180,.12);
+  border-color: rgba(180,180,180,.3);
+  color: #aaa;
+}
+
+main {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 32px;
+  width: 100%;
+  max-width: 1120px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  main { grid-template-columns: 1fr; }
+}
+
+.panel {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(201,162,39,.2);
+  border-radius: 16px;
+  padding: 24px;
+  backdrop-filter: blur(6px);
+}
+
+.panel h2 {
+  font-family: "Cinzel", serif;
+  font-size: 1.15rem;
+  color: var(--gold);
+  margin: 0 0 18px;
+  letter-spacing: 2px;
+}
+
+.question {
+  margin-bottom: 20px;
+}
+
+.question label {
+  display: block;
+  font-size: .92rem;
+  margin-bottom: 10px;
+  opacity: .9;
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.options button {
+  padding: 8px 14px;
+  border: 1px solid rgba(201,162,39,.35);
+  border-radius: 20px;
+  background: rgba(0,0,0,.2);
+  color: var(--parchment);
+  font-family: inherit;
+  font-size: .86rem;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.options button:hover, .options button.selected {
+  background: rgba(201,162,39,.25);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.actions button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-family: "Noto Serif SC", serif;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .2s;
+}
+
+.actions button.primary {
+  background: linear-gradient(135deg, #c9a227 0%, #8a6e1e 100%);
+  color: #151727;
+  font-weight: 700;
+}
+
+.actions button.secondary {
+  background: rgba(255,255,255,.1);
+  color: var(--parchment);
+  border: 1px solid rgba(255,255,255,.2);
+}
+
+.actions button:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+.actions button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+.recommendation {
+  display: none;
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(201,162,39,.12);
+  border: 1px solid rgba(201,162,39,.25);
+}
+
+.recommendation.show { display: block; }
+
+.recommendation h3 {
+  margin: 0 0 8px;
+  font-family: "Cinzel", serif;
+  color: var(--gold);
+  font-size: 1rem;
+}
+
+.recommendation p {
+  margin: 0;
+  font-size: .88rem;
+  line-height: 1.6;
+  opacity: .9;
+}
+
+.style-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.style-chip {
+  padding: 7px 12px;
+  border: 1px solid rgba(201,162,39,.35);
+  border-radius: 18px;
+  background: rgba(0,0,0,.2);
+  color: var(--parchment);
+  font-family: inherit;
+  font-size: .8rem;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.style-chip .num {
+  display: inline-block;
+  margin-right: 5px;
+  color: var(--gold);
+  font-family: "Cinzel", serif;
+  font-weight: 700;
+}
+
+.style-chip:hover, .style-chip.active {
+  background: rgba(201,162,39,.25);
+  border-color: var(--gold);
+}
+
+.card-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#card {
+  width: 360px;
+  height: 630px;
+  background: var(--card-bg);
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5), inset 0 0 40px rgba(123,31,58,.08);
+  position: relative;
+  overflow: hidden;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px;
+}
+
+.card-border {
+  position: absolute;
+  inset: 12px;
+  border: 3px solid var(--gold);
+  border-radius: 14px;
+  pointer-events: none;
+}
+
+.card-border::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid var(--gold-dark);
+  border-radius: 10px;
+}
+
+.corner {
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  color: var(--wine);
+  pointer-events: none;
+}
+
+.corner.tl { top: 18px; left: 18px; }
+.corner.tr { top: 18px; right: 18px; transform: rotate(90deg); }
+.corner.br { bottom: 18px; right: 18px; transform: rotate(180deg); }
+.corner.bl { bottom: 18px; left: 18px; transform: rotate(270deg); }
+
+.roman {
+  font-family: "Cinzel", serif;
+  font-size: 2.4rem;
+  color: var(--wine);
+  margin-top: 26px;
+  z-index: 1;
+}
+
+.style-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-top: 4px;
+  z-index: 1;
+}
+
+.style-en {
+  font-family: "Cinzel", serif;
+  font-size: .72rem;
+  color: var(--gold-dark);
+  letter-spacing: 2px;
+  margin-top: 3px;
+  z-index: 1;
+}
+
+.symbol-frame {
+  width: 220px;
+  height: 220px;
+  margin-top: 18px;
+  border: 2px solid var(--gold-dark);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.symbol-frame::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border: 1px dashed rgba(138,110,30,.5);
+  border-radius: 50%;
+}
+
+.symbol-frame svg {
+  width: 140px;
+  height: 140px;
+  color: var(--gold-dark);
+}
+
+.card-text {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  z-index: 1;
+  text-align: center;
+}
+
+.card-text p {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--ink);
+}
+
+.quote-open, .quote-close {
+  font-family: "Cinzel", serif;
+  font-size: 2rem;
+  color: var(--gold-dark);
+  line-height: 1;
+}
+
+.plaque {
+  width: 86%;
+  padding: 10px 16px;
+  border: 2px solid var(--gold-dark);
+  border-radius: 8px;
+  text-align: center;
+  background: rgba(201,162,39,.1);
+  z-index: 1;
+}
+
+.plaque-en {
+  font-family: "Cinzel", serif;
+  font-size: .7rem;
+  letter-spacing: 1.5px;
+  color: var(--wine);
+}
+
+.plaque-cn {
+  font-size: .8rem;
+  color: var(--gold-dark);
+  letter-spacing: 3px;
+  margin-top: 2px;
+}
+
+.source {
+  font-size: .65rem;
+  color: var(--gold-dark);
+  margin-top: 10px;
+  z-index: 1;
+}
+
+.card-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.card-actions button {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(201,162,39,.4);
+  background: rgba(0,0,0,.3);
+  color: var(--parchment);
+  font-family: inherit;
+  font-size: .9rem;
+  cursor: pointer;
+}
+
+.card-actions button:hover { background: rgba(201,162,39,.2); }
+
+#toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(0,0,0,.8);
+  color: var(--parchment);
+  padding: 10px 20px;
+  border-radius: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all .3s;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<header>
+  <h1>麦 门 神 谕</h1>
+  <p>每日麦门决策助手 · 抽一张生活签，决定今天吃什么</p>
+  <span id="status">连接中…</span>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>先描述你的状态</h2>
+
+    <div class="question" data-q="time">
+      <label>1. 现在是什么时间？</label>
+      <div class="options">
+        <button data-v="morning">早上（7-11点）</button>
+        <button data-v="noon">中午（11-14点）</button>
+        <button data-v="afternoon">下午（14-17点）</button>
+        <button data-v="evening">晚上（17-21点）</button>
+        <button data-v="night">深夜（21点后）</button>
+      </div>
+    </div>
+
+    <div class="question" data-q="mood">
+      <label>2. 你现在的状态？</label>
+      <div class="options">
+        <button data-v="tired">困倦没精神</button>
+        <button data-v="confused">纠结吃啥</button>
+        <button data-v="stressed">压力大</button>
+        <button data-v="relaxed">想放松</button>
+        <button data-v="happy">开心想分享</button>
+        <button data-v="disciplined">自律/健身中</button>
+        <button data-v="lazy">想摸鱼</button>
+      </div>
+    </div>
+
+    <div class="question" data-q="scene">
+      <label>3. 你在什么场景？</label>
+      <div class="options">
+        <button data-v="commute">通勤/路上</button>
+        <button data-v="office">办公室</button>
+        <button data-v="home">家里</button>
+        <button data-v="party">聚会</button>
+        <button data-v="gym">健身</button>
+        <button data-v="outdoor">户外</button>
+      </div>
+    </div>
+
+    <div class="question" data-q="health">
+      <label>4. 想要健康低卡一点吗？</label>
+      <div class="options">
+        <button data-v="yes">是的，要低卡</button>
+        <button data-v="no">不用，开心吃</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="btn-recommend">获取推荐</button>
+      <button class="secondary" id="btn-reset">重置</button>
+    </div>
+
+    <div class="recommendation" id="recommendation">
+      <h3>🎯 推荐抽取：<span id="rec-style">-</span></h3>
+      <p id="rec-reason"></p>
+      <div class="actions" style="margin-top:14px;">
+        <button class="primary" id="btn-draw-rec">抽取这张牌</button>
+      </div>
+    </div>
+
+    <h2 style="margin-top:28px;">或直接选择</h2>
+    <div class="style-row" id="styles"></div>
+  </section>
+
+  <section class="card-stage">
+    <div id="card">
+      <div class="card-border"></div>
+      <svg class="corner tl" viewBox="0 0 46 46"><path d="M4 42V10C4 6 6 4 10 4H42" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" fill="currentColor"/></svg>
+      <svg class="corner tr" viewBox="0 0 46 46"><path d="M4 42V10C4 6 6 4 10 4H42" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" fill="currentColor"/></svg>
+      <svg class="corner br" viewBox="0 0 46 46"><path d="M4 42V10C4 6 6 4 10 4H42" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" fill="currentColor"/></svg>
+      <svg class="corner bl" viewBox="0 0 46 46"><path d="M4 42V10C4 6 6 4 10 4H42" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" fill="currentColor"/></svg>
+
+      <div class="roman" id="c-roman">I</div>
+      <div class="style-name" id="c-title">早八续命签</div>
+      <div class="style-en" id="c-subtitle">THE MORNING AWAKENING</div>
+
+      <div class="symbol-frame">
+        <svg id="c-symbol" viewBox="0 0 120 120"></svg>
+      </div>
+
+      <div class="card-text">
+        <span class="quote-open">“</span>
+        <p id="c-text">点击下方按钮，抽取今日麦门神谕…</p>
+        <span class="quote-close">”</span>
+      </div>
+
+      <div class="plaque">
+        <div class="plaque-en" id="c-plaque-en">THE MCMEN ORACLE</div>
+        <div class="plaque-cn" id="c-plaque-cn">麦 门 神 谕</div>
+      </div>
+
+      <div class="source" id="c-source">数据源：等待连接…</div>
+    </div>
+
+    <div class="card-actions">
+      <button id="btn-gen">✨ 生成神谕</button>
+      <button id="btn-download">⬇ 下载图片</button>
+      <button id="btn-copy">📋 复制文字</button>
+    </div>
+  </section>
+</main>
+
+<div id="toast"></div>
+
 <script>
-const STYLE_NAMES = { verse: "语录体", liturgy: "礼赞体", poem: "诗词体", rap: "说唱体", blessing: "祈福体" };
-const STYLE_ROMAN = { verse: "I", liturgy: "II", poem: "III", rap: "IV", blessing: "V" };
-const STYLE_TITLES = { verse: "THE GOLDEN ORACLE", liturgy: "THE CROWN FEAST", poem: "THE MOONLIT VERSE", rap: "THE RHYME CROWN", blessing: "THE GUARDIAN WISH" };
-const STYLE_PLAQUE_CN = { verse: "黄 金 神 谕", liturgy: "盛 典 赞 歌", poem: "月 下 诗 篇", rap: "节 奏 王 冠", blessing: "守 护 祈 愿" };
-let currentStyle = "verse";
-let currentCard = null;
+const STYLES = {
+  morning: { name: "早八续命签", en: "THE MORNING AWAKENING", plaque: "晨 起 神 谕", roman: "I", visual: "modern" },
+  lunch:   { name: "中午干饭签", en: "THE LUNCH DECREE",      plaque: "干 饭 神 谕", roman: "II", visual: "fantasy" },
+  afternoon:{ name: "下午茶摸鱼签", en: "THE AFTERNOON SNEAK", plaque: "摸 鱼 神 谕", roman: "III", visual: "classic" },
+  overtime:{ name: "加班回血签", en: "THE NIGHT SHIFT CURE",  plaque: "回 血 神 谕", roman: "IV", visual: "modern" },
+  feast:   { name: "周末欢聚签", en: "THE WEEKEND FEAST",     plaque: "欢 聚 神 谕", roman: "V", visual: "fantasy" },
+  light:   { name: "自律轻食签", en: "THE LIGHT CHOICE",      plaque: "轻 食 神 谕", roman: "VI", visual: "classic" }
+};
 
 const SYMBOLS = {
-  verse: `<circle cx="60" cy="60" r="48" stroke-dasharray="4 4" opacity=".6"/>
-<path d="M60 18v12M60 90v12M18 60h12M90 60h12" opacity=".7"/>
-<path d="M60 38a8 8 0 0 0-8-8h-16a8 8 0 0 0-8 8v28a8 8 0 0 0 8 8h24a8 8 0 0 0 8-8V38z" fill="rgba(201,162,39,.12)"/>
-<ellipse cx="60" cy="58" rx="16" ry="10" fill="rgba(201,162,39,.2)"/>
-<path d="M60 42v32M52 50h16M52 58h16M52 66h16" opacity=".8"/>
-<path d="M48 78c0 8 5.4 14 12 14s12-6 12-14" fill="none"/>
-<circle cx="44" cy="44" r="3" fill="currentColor" opacity=".6"/>
-<circle cx="76" cy="44" r="3" fill="currentColor" opacity=".6"/>
-<path d="M32 86c8-6 16-8 28-8s20 2 28 8" fill="none" opacity=".5"/>`,
-  liturgy: `<circle cx="60" cy="60" r="48" stroke-dasharray="2 3" opacity=".5"/>
-<path d="M60 20l6 12h12l-10 8 4 12-12-8-12 8 4-12-10-8h12z" fill="rgba(201,162,39,.18)"/>
-<path d="M38 70c0-12 9.8-22 22-22s22 10 22 22v18H38V70z" fill="rgba(123,31,58,.08)"/>
-<path d="M38 70c0-8 9.8-14 22-14s22 6 22 14" fill="none"/>
-<path d="M45 88h30M48 80h24M52 72h16" opacity=".7"/>
+  morning: `<circle cx="60" cy="60" r="48" stroke-dasharray="4 4" opacity=".5"/>
+<path d="M60 20v16M60 84v16M20 60h16M84 60h16" stroke-width="2"/>
+<circle cx="60" cy="60" r="22" fill="rgba(201,162,39,.12)"/>
+<path d="M60 42v36M46 58h28" stroke-width="2"/>
+<path d="M42 48a6 6 0 0 1 6-6h24a6 6 0 0 1 6 6v20a6 6 0 0 1-6 6H48a6 6 0 0 1-6-6V48z" fill="rgba(201,162,39,.1)" stroke-width="1.5"/>
+<circle cx="60" cy="40" r="4" fill="currentColor" opacity=".6"/>
+<path d="M48 88c6-4 12-6 12-6s6 2 12 6" fill="none" opacity=".6"/>`,
+  lunch: `<circle cx="60" cy="60" r="48" stroke-dasharray="2 3" opacity=".5"/>
+<path d="M60 20l8 14h16l-12 10 5 16-17-11-17 11 5-16-12-10h16z" fill="rgba(201,162,39,.18)"/>
+<path d="M36 72c0-14 10.8-24 24-24s24 10 24 24v18H36V72z" fill="rgba(123,31,58,.08)"/>
 <circle cx="60" cy="58" r="6" fill="currentColor" opacity=".5"/>
-<path d="M24 60c10-4 20-6 36-6s26 2 36 6" fill="none" opacity=".4"/>`,
-  poem: `<circle cx="60" cy="60" r="48" opacity=".5"/>
-<circle cx="60" cy="45" r="14" fill="rgba(201,162,39,.12)"/>
-<path d="M46 45a14 14 0 0 1 28 0" fill="none"/>
-<circle cx="54" cy="42" r="2" fill="currentColor" opacity=".5"/>
-<circle cx="66" cy="42" r="2" fill="currentColor" opacity=".5"/>
-<path d="M60 100c-18-8-28-20-28-36 0-10 6-18 14-22M60 100c18-8 28-20 28-36 0-10-6-18-14-22" fill="none" opacity=".6"/>
-<path d="M30 92c10 6 20 8 30 8s20-2 30-8" fill="none" opacity=".4"/>
-<path d="M42 82c6 4 12 6 18 6s12-2 18-6" fill="none" opacity=".5"/>
-<path d="M35 54c-4-2-6-6-6-10M85 54c4-2 6-6 6-10" fill="none" opacity=".5"/>`,
-  rap: `<circle cx="60" cy="60" r="48" stroke-dasharray="3 5" opacity=".5"/>
-<rect x="48" y="32" width="24" height="44" rx="4" fill="rgba(201,162,39,.1)"/>
-<circle cx="60" cy="40" r="6" fill="rgba(201,162,39,.2)"/>
-<path d="M52 48h16M52 56h16M52 64h12" opacity=".7"/>
-<path d="M72 58l10-6v20l-10-6z" fill="rgba(123,31,58,.1)"/>
-<path d="M28 70c8-4 18-6 32-6s24 2 32 6" fill="none" opacity=".5"/>
-<path d="M24 78c10-4 22-6 36-6s26 2 36 6" fill="none" opacity=".4"/>
-<circle cx="34" cy="50" r="2" fill="currentColor" opacity=".5"/>
-<circle cx="86" cy="50" r="2" fill="currentColor" opacity=".5"/>`,
-  blessing: `<circle cx="60" cy="60" r="48" opacity=".5"/>
-<path d="M60 22c-14 0-24 10-24 24 0 14 24 40 24 40s24-26 24-40c0-14-10-24-24-24z" fill="rgba(201,162,39,.12)"/>
-<path d="M60 30c-10 0-18 7-18 16 0 9 18 28 18 28s18-19 18-28c0-9-8-16-18-16z" fill="rgba(123,31,58,.06)"/>
-<path d="M60 88v20M50 100h20" opacity=".6"/>
-<path d="M36 60c6-4 12-6 24-6s18 2 24 6" fill="none" opacity=".5"/>
-<path d="M30 72c8-4 18-6 30-6s22 2 30 6" fill="none" opacity=".4"/>
-<circle cx="60" cy="52" r="4" fill="currentColor" opacity=".4"/>
-<path d="M30 44c4-6 10-10 16-10M90 44c-4-6-10-10-16-10" fill="none" opacity=".5"/>`
+<path d="M45 86h30M50 78h20" stroke-width="2"/>`,
+  afternoon: `<circle cx="60" cy="60" r="48" opacity=".45"/>
+<circle cx="60" cy="45" r="14" fill="rgba(201,162,39,.1)"/>
+<path d="M60 100c-18-8-28-20-28-36 0-10 6-18 14-22M60 100c18-8 28-20 28-36 0-10-6-18-14-22" fill="none"/>
+<path d="M38 84c8 4 14 6 22 6s14-2 22-6" fill="none"/>
+<path d="M35 50c-4-2-6-6-6-10M85 50c4-2 6-6 6-10" fill="none"/>
+<circle cx="54" cy="42" r="2" fill="currentColor"/>
+<circle cx="66" cy="42" r="2" fill="currentColor"/>`,
+  overtime: `<circle cx="60" cy="60" r="48" stroke-dasharray="3 5" opacity=".5"/>
+<rect x="44" y="36" width="32" height="28" rx="4" fill="rgba(201,162,39,.1)"/>
+<path d="M48 40h24M48 48h20M48 56h16" stroke-width="2"/>
+<path d="M60 64v20M52 80h16" stroke-width="2.5"/>
+<circle cx="60" cy="50" r="5" fill="rgba(123,31,58,.2)"/>
+<path d="M32 74c10-4 20-6 28-6s18 2 28 6" fill="none"/>`,
+  feast: `<circle cx="60" cy="60" r="48" opacity=".45"/>
+<path d="M42 50h36M42 58h36M42 66h36" stroke-width="2"/>
+<path d="M60 30c-8 0-14 6-14 14v12h28V44c0-8-6-14-14-14z" fill="rgba(201,162,39,.15)"/>
+<path d="M40 78c8 6 16 10 20 10s12-4 20-10" fill="none"/>
+<circle cx="38" cy="54" r="3" fill="currentColor"/>
+<circle cx="82" cy="54" r="3" fill="currentColor"/>
+<path d="M48 36c4-4 8-6 12-6s8 2 12 6" fill="none"/>`,
+  light: `<circle cx="60" cy="60" r="48" stroke-dasharray="4 4" opacity=".5"/>
+<path d="M60 25c-12 0-22 10-22 22 0 12 22 36 22 36s22-24 22-36c0-12-10-22-22-22z" fill="rgba(201,162,39,.1)"/>
+<path d="M60 36c-8 0-14 6-14 14 0 8 14 24 14 24s14-16 14-24c0-8-6-14-14-14z" fill="rgba(123,31,58,.06)"/>
+<path d="M60 92v16M52 104h16" stroke-width="2"/>
+<path d="M38 62c6-4 12-6 22-6s16 2 22 6" fill="none"/>
+<circle cx="60" cy="54" r="4" fill="currentColor" opacity=".5"/>
+<path d="M35 45c4-5 10-9 16-9M85 45c-4-5-10-9-16-9" fill="none"/>`
 };
+
+let currentStyle = "morning";
+let currentCard = null;
+let answers = {};
 
 const $ = (id) => document.getElementById(id);
 function toast(msg) {
@@ -71,15 +601,28 @@ async function fetchJSON(url, opts = {}, timeout = 12000) {
   }
 }
 
+function selectOption(btn) {
+  const q = btn.closest(".question");
+  const key = q.dataset.q;
+  q.querySelectorAll("button").forEach((b) => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  answers[key] = btn.dataset.v;
+}
+
+document.querySelectorAll(".options button").forEach((btn) => {
+  btn.addEventListener("click", () => selectOption(btn));
+});
+
 async function loadStyles() {
   try {
     const data = await fetchJSON("/api/styles");
     const box = $("styles");
     box.innerHTML = "";
     data.styles.forEach((key) => {
+      const s = STYLES[key] || STYLES.morning;
       const chip = document.createElement("button");
       chip.className = "style-chip" + (key === currentStyle ? " active" : "");
-      chip.innerHTML = `<span class="num">${STYLE_ROMAN[key]}</span>${STYLE_NAMES[key] || key}`;
+      chip.innerHTML = `<span class="num">${s.roman}</span>${s.name}`;
       chip.onclick = () => {
         currentStyle = key;
         box.querySelectorAll(".style-chip").forEach((c) => c.classList.remove("active"));
@@ -88,9 +631,37 @@ async function loadStyles() {
       };
       box.appendChild(chip);
     });
+    const status = $("status");
+    status.textContent = data.status.mcp ? "已连接麦当劳 MCP（实时数据）" : "示例模式（无 MCP 实时数据）";
+    status.classList.toggle("fallback", !data.status.mcp);
+    if (data.styles.length) currentStyle = data.styles[0];
+    renderEmptyCard();
   } catch (e) {
     $("status").textContent = "无法连接服务";
     $("status").classList.add("fallback");
+  }
+}
+
+async function recommend() {
+  const btn = $("btn-recommend");
+  btn.disabled = true;
+  try {
+    const data = await fetchJSON("/api/recommend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(answers)
+    });
+    currentStyle = data.style;
+    $("rec-style").textContent = STYLES[data.style].name;
+    $("rec-reason").textContent = data.reason;
+    $("recommendation").classList.add("show");
+    $("styles").querySelectorAll(".style-chip").forEach((c) => c.classList.remove("active"));
+    const active = Array.from($("styles").children).find((c) => c.textContent.includes(STYLES[data.style].name));
+    if (active) active.classList.add("active");
+  } catch (e) {
+    toast("推荐失败：" + e.message);
+  } finally {
+    btn.disabled = false;
   }
 }
 
@@ -98,7 +669,11 @@ async function generate() {
   const btn = $("btn-gen");
   btn.disabled = true;
   try {
-    const data = await fetchJSON("/api/write?style=" + currentStyle);
+    const data = await fetchJSON("/api/write", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ style: currentStyle })
+    });
     currentCard = data;
     renderCard(data);
   } catch (e) {
@@ -108,26 +683,60 @@ async function generate() {
   }
 }
 
+function renderEmptyCard() {
+  const s = STYLES[currentStyle] || STYLES.morning;
+  $("c-roman").textContent = s.roman;
+  $("c-title").textContent = s.name;
+  $("c-subtitle").textContent = s.en;
+  $("c-plaque-en").textContent = "THE MCMEN ORACLE";
+  $("c-plaque-cn").textContent = s.plaque;
+  $("c-symbol").innerHTML = SYMBOLS[currentStyle] || SYMBOLS.morning;
+  $("c-text").textContent = "点击下方按钮，抽取今日麦门神谕…";
+  $("c-source").textContent = "";
+}
+
 function renderCard(card) {
   const style = card.style || currentStyle;
-  $("c-roman").textContent = STYLE_ROMAN[style] || "I";
-  $("c-title").textContent = STYLE_NAMES[style] || style;
-  $("c-subtitle").textContent = STYLE_TITLES[style] || "THE ORACLE";
-  $("c-plaque-en").textContent = STYLE_TITLES[style] || "THE ORACLE";
-  $("c-plaque-cn").textContent = STYLE_PLAQUE_CN[style] || "麦 门 神 谕";
-  $("c-symbol").innerHTML = SYMBOLS[style] || SYMBOLS.verse;
+  const s = STYLES[style] || STYLES.morning;
+  currentStyle = style;
+  $("c-roman").textContent = s.roman;
+  $("c-title").textContent = s.name;
+  $("c-subtitle").textContent = s.en;
+  $("c-plaque-en").textContent = "THE MCMEN ORACLE";
+  $("c-plaque-cn").textContent = s.plaque;
+  $("c-symbol").innerHTML = SYMBOLS[style] || SYMBOLS.morning;
   $("c-text").textContent = normalizeDigits(card.text || "");
   const ctx = card.context || {};
-  const src = ctx.source === "mcp" ? "麦当劳 MCP 实时神谕" : "内置示例神谕";
-  $("c-source").textContent = "数据源：" + src;
-  const status = $("status");
-  status.textContent = ctx.source === "mcp" ? "已连接麦当劳 MCP（实时数据）" : "示例模式（无 MCP 实时数据）";
-  status.classList.toggle("fallback", ctx.source !== "mcp");
+  $("c-source").textContent = ctx.source === "mcp" ? "数据源：麦当劳 MCP 实时神谕" : "数据源：内置示例神谕";
+  $("styles").querySelectorAll(".style-chip").forEach((c) => c.classList.remove("active"));
+  const active = Array.from($("styles").children).find((c) => c.textContent.includes(s.name));
+  if (active) active.classList.add("active");
 }
 
 function normalizeDigits(s) {
   return String(s).replace(/[0-9]/g, (d) => String.fromCharCode(0xFF10 + parseInt(d, 10)));
 }
+
+$("btn-recommend").addEventListener("click", recommend);
+$("btn-draw-rec").addEventListener("click", generate);
+$("btn-gen").addEventListener("click", generate);
+$("btn-reset").addEventListener("click", () => {
+  answers = {};
+  document.querySelectorAll(".options button").forEach((b) => b.classList.remove("selected"));
+  $("recommendation").classList.remove("show");
+  renderEmptyCard();
+});
+
+$("btn-copy").addEventListener("click", () => {
+  if (!currentCard) return toast("先生成一张牌");
+  const text = $("c-text").textContent;
+  navigator.clipboard.writeText(text).then(() => toast("文案已复制"));
+});
+
+$("btn-download").addEventListener("click", () => {
+  if (!currentCard) return toast("先生成一张牌");
+  drawCardToPNG(currentCard);
+});
 
 function wrapText(ctx, text, maxW) {
   const paragraphs = text.split("\n");
@@ -149,68 +758,14 @@ function wrapText(ctx, text, maxW) {
   return out;
 }
 
-function drawSymbolPath(ctx, style, cx, cy, size) {
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.scale(size / 120, size / 120);
-  ctx.strokeStyle = "#8A6E1E";
-  ctx.fillStyle = "rgba(201,162,39,.12)";
-  ctx.lineWidth = 1.5;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  if (style === "verse") {
-    ctx.beginPath(); ctx.arc(60, 60, 48, 0, Math.PI * 2); ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
-    ctx.beginPath(); ctx.moveTo(60, 18); ctx.lineTo(60, 30); ctx.moveTo(60, 90); ctx.lineTo(60, 102);
-    ctx.moveTo(18, 60); ctx.lineTo(30, 60); ctx.moveTo(90, 60); ctx.lineTo(102, 60); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(60, 38); ctx.bezierCurveTo(52, 30, 44, 30, 36, 38); ctx.lineTo(36, 66); ctx.bezierCurveTo(36, 74, 44, 74, 60, 74); ctx.bezierCurveTo(76, 74, 84, 74, 84, 66); ctx.lineTo(84, 38); ctx.bezierCurveTo(76, 30, 68, 30, 60, 38); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(60, 58, 16, 10, 0, 0, Math.PI * 2); ctx.fillStyle = "rgba(201,162,39,.2)"; ctx.fill();
-    ctx.beginPath(); ctx.moveTo(60, 42); ctx.lineTo(60, 74); ctx.moveTo(52, 50); ctx.lineTo(68, 50); ctx.moveTo(52, 58); ctx.lineTo(68, 58); ctx.moveTo(52, 66); ctx.lineTo(68, 66); ctx.stroke();
-    ctx.beginPath(); ctx.arc(44, 44, 3, 0, Math.PI * 2); ctx.arc(76, 44, 3, 0, Math.PI * 2); ctx.fillStyle = "#8A6E1E"; ctx.fill();
-    ctx.beginPath(); ctx.moveTo(32, 86); ctx.bezierCurveTo(40, 80, 48, 78, 60, 78); ctx.bezierCurveTo(72, 78, 80, 80, 88, 86); ctx.stroke();
-  } else if (style === "liturgy") {
-    ctx.beginPath(); ctx.arc(60, 60, 48, 0, Math.PI * 2); ctx.setLineDash([2, 3]); ctx.stroke(); ctx.setLineDash([]);
-    ctx.beginPath(); ctx.moveTo(60, 20); ctx.lineTo(66, 32); ctx.lineTo(78, 32); ctx.lineTo(68, 40); ctx.lineTo(72, 52); ctx.lineTo(60, 44); ctx.lineTo(48, 52); ctx.lineTo(52, 40); ctx.lineTo(42, 32); ctx.lineTo(54, 32); ctx.closePath(); ctx.fillStyle = "rgba(201,162,39,.18)"; ctx.fill();
-    ctx.beginPath(); ctx.moveTo(38, 70); ctx.bezierCurveTo(38, 54, 47.5, 48, 60, 48); ctx.bezierCurveTo(72.5, 48, 82, 54, 82, 70); ctx.lineTo(82, 88); ctx.lineTo(38, 88); ctx.closePath(); ctx.fillStyle = "rgba(123,31,58,.08)"; ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(38, 70); ctx.bezierCurveTo(38, 62, 47.5, 56, 60, 56); ctx.bezierCurveTo(72.5, 56, 82, 62, 82, 70); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(45, 88); ctx.lineTo(75, 88); ctx.moveTo(48, 80); ctx.lineTo(72, 80); ctx.moveTo(52, 72); ctx.lineTo(68, 72); ctx.stroke();
-    ctx.beginPath(); ctx.arc(60, 58, 6, 0, Math.PI * 2); ctx.fillStyle = "#8A6E1E"; ctx.fill();
-    ctx.beginPath(); ctx.moveTo(24, 60); ctx.bezierCurveTo(34, 56, 44, 54, 60, 54); ctx.bezierCurveTo(76, 54, 86, 56, 96, 60); ctx.stroke();
-  } else if (style === "poem") {
-    ctx.beginPath(); ctx.arc(60, 60, 48, 0, Math.PI * 2); ctx.stroke();
-    ctx.beginPath(); ctx.arc(60, 45, 14, 0, Math.PI * 2); ctx.fillStyle = "rgba(201,162,39,.12)"; ctx.fill();
-    ctx.beginPath(); ctx.arc(54, 42, 2, 0, Math.PI * 2); ctx.arc(66, 42, 2, 0, Math.PI * 2); ctx.fillStyle = "#8A6E1E"; ctx.fill();
-    ctx.beginPath(); ctx.moveTo(60, 100); ctx.bezierCurveTo(42, 92, 32, 80, 32, 64); ctx.bezierCurveTo(32, 54, 38, 46, 46, 42); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(60, 100); ctx.bezierCurveTo(78, 92, 88, 80, 88, 64); ctx.bezierCurveTo(88, 54, 82, 46, 74, 42); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(30, 92); ctx.bezierCurveTo(40, 98, 50, 100, 60, 100); ctx.bezierCurveTo(70, 100, 80, 98, 90, 92); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(42, 82); ctx.bezierCurveTo(48, 86, 54, 88, 60, 88); ctx.bezierCurveTo(66, 88, 72, 86, 78, 82); ctx.stroke();
-  } else if (style === "rap") {
-    ctx.beginPath(); ctx.arc(60, 60, 48, 0, Math.PI * 2); ctx.setLineDash([3, 5]); ctx.stroke(); ctx.setLineDash([]);
-    ctx.beginPath(); ctx.roundRect(48, 32, 24, 44, 4); ctx.fillStyle = "rgba(201,162,39,.1)"; ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.arc(60, 40, 6, 0, Math.PI * 2); ctx.fillStyle = "rgba(201,162,39,.2)"; ctx.fill();
-    ctx.beginPath(); ctx.moveTo(52, 48); ctx.lineTo(68, 48); ctx.moveTo(52, 56); ctx.lineTo(68, 56); ctx.moveTo(52, 64); ctx.lineTo(64, 64); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(72, 58); ctx.lineTo(82, 52); ctx.lineTo(82, 72); ctx.lineTo(72, 66); ctx.closePath(); ctx.fillStyle = "rgba(123,31,58,.1)"; ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(28, 70); ctx.bezierCurveTo(36, 66, 46, 64, 60, 64); ctx.bezierCurveTo(74, 64, 84, 66, 92, 70); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(24, 78); ctx.bezierCurveTo(34, 74, 46, 72, 60, 72); ctx.bezierCurveTo(74, 72, 86, 74, 96, 78); ctx.stroke();
-    ctx.beginPath(); ctx.arc(34, 50, 2, 0, Math.PI * 2); ctx.arc(86, 50, 2, 0, Math.PI * 2); ctx.fillStyle = "#8A6E1E"; ctx.fill();
-  } else if (style === "blessing") {
-    ctx.beginPath(); ctx.arc(60, 60, 48, 0, Math.PI * 2); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(60, 22); ctx.bezierCurveTo(46, 22, 36, 32, 36, 46); ctx.bezierCurveTo(36, 60, 60, 86, 60, 86); ctx.bezierCurveTo(60, 86, 84, 60, 84, 46); ctx.bezierCurveTo(84, 32, 74, 22, 60, 22); ctx.closePath(); ctx.fillStyle = "rgba(201,162,39,.12)"; ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(60, 30); ctx.bezierCurveTo(50, 30, 42, 37, 42, 46); ctx.bezierCurveTo(42, 55, 60, 74, 60, 74); ctx.bezierCurveTo(60, 74, 78, 55, 78, 46); ctx.bezierCurveTo(78, 37, 70, 30, 60, 30); ctx.closePath(); ctx.fillStyle = "rgba(123,31,58,.06)"; ctx.fill();
-    ctx.beginPath(); ctx.moveTo(60, 88); ctx.lineTo(60, 108); ctx.moveTo(50, 100); ctx.lineTo(70, 100); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(36, 60); ctx.bezierCurveTo(42, 56, 48, 54, 60, 54); ctx.bezierCurveTo(72, 54, 78, 56, 84, 60); ctx.stroke();
-    ctx.beginPath(); ctx.arc(60, 52, 4, 0, Math.PI * 2); ctx.fillStyle = "#8A6E1E"; ctx.fill();
-  }
-  ctx.restore();
-}
-
-function drawCard(card) {
+function drawCardToPNG(card) {
   const W = 720, H = 1260;
   const cv = document.createElement("canvas");
   cv.width = W; cv.height = H;
   const ctx = cv.getContext("2d");
-  const style = card.style || "verse";
+  const style = card.style || currentStyle;
+  const s = STYLES[style];
 
-  // parchment
   const bg = ctx.createRadialGradient(W * 0.35, H * 0.28, 0, W / 2, H / 2, W * 0.95);
   bg.addColorStop(0, "#F9EFD6");
   bg.addColorStop(0.4, "#F5E9CC");
@@ -219,11 +774,9 @@ function drawCard(card) {
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  // fine grain
   ctx.fillStyle = "rgba(0,0,0,.02)";
   for (let i = 0; i < 40000; i++) ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
 
-  // outer border
   ctx.strokeStyle = "#C9A227";
   ctx.lineWidth = 5;
   ctx.strokeRect(18, 18, W - 36, H - 36);
@@ -236,7 +789,6 @@ function drawCard(card) {
   ctx.strokeRect(36, 36, W - 72, H - 72);
   ctx.setLineDash([]);
 
-  // corners
   const drawCorner = (x, y, rot) => {
     ctx.save();
     ctx.translate(x, y);
@@ -246,9 +798,6 @@ function drawCard(card) {
     ctx.lineWidth = 2.5;
     ctx.lineCap = "round";
     ctx.beginPath(); ctx.moveTo(0, 42); ctx.lineTo(0, 10); ctx.lineTo(32, 10); ctx.stroke();
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(8, 36); ctx.lineTo(8, 16); ctx.lineTo(26, 16); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(4, 22); ctx.quadraticCurveTo(12, 16, 18, 8); ctx.stroke();
     ctx.beginPath(); ctx.arc(9, 9, 3, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   };
@@ -260,30 +809,35 @@ function drawCard(card) {
   const cx = W / 2;
   ctx.textAlign = "center";
 
-  // top numbering area
   ctx.fillStyle = "#7B1F3A";
   ctx.font = "38px 'Cinzel', 'Times New Roman', serif";
-  ctx.fillText(STYLE_ROMAN[style] || "I", cx, 105);
-  ctx.font = "bold 22px 'Noto Serif SC', 'Songti SC', serif";
-  ctx.fillText(STYLE_NAMES[style] || style, cx, 145);
+  ctx.fillText(s.roman, cx, 105);
+  ctx.font = "bold 24px 'Noto Serif SC', 'Songti SC', serif";
+  ctx.fillStyle = "#2A2132";
+  ctx.fillText(s.name, cx, 145);
   ctx.font = "14px 'Cinzel', 'Times New Roman', serif";
   ctx.fillStyle = "#8A6E1E";
-  ctx.fillText(STYLE_TITLES[style] || "THE ORACLE", cx, 172);
+  ctx.fillText(s.en, cx, 172);
 
-  // central symbol frame
   ctx.strokeStyle = "#8A6E1E";
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.arc(cx, 380, 150, 0, Math.PI * 2); ctx.stroke();
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.arc(cx, 380, 134, 0, Math.PI * 2); ctx.stroke();
-  const symGrad = ctx.createRadialGradient(cx, 380, 0, cx, 380, 150);
-  symGrad.addColorStop(0, "rgba(201,162,39,.08)");
-  symGrad.addColorStop(1, "transparent");
-  ctx.fillStyle = symGrad;
-  ctx.beginPath(); ctx.arc(cx, 380, 150, 0, Math.PI * 2); ctx.fill();
-  drawSymbolPath(ctx, style, cx, 380, 200);
 
-  // main text with quote marks
+  const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 120 120" color="#8A6E1E">${SYMBOLS[style]}</svg>`;
+  const img = new Image();
+  const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  img.onload = () => {
+    ctx.drawImage(img, cx - 70, 310, 140, 140);
+    URL.revokeObjectURL(url);
+    finishPNG(ctx, card, W, H, cx, cv);
+  };
+  img.src = url;
+}
+
+function finishPNG(ctx, card, W, H, cx, cv) {
   ctx.fillStyle = "#2A2132";
   ctx.font = "28px 'Noto Serif SC', 'Songti SC', serif";
   const text = normalizeDigits(card.text || "");
@@ -298,57 +852,32 @@ function drawCard(card) {
   ctx.font = "28px 'Noto Serif SC', 'Songti SC', serif";
   lines.forEach((ln, i) => ctx.fillText(ln, cx, startY + i * lineH));
 
-  // bottom plaque
-  const ctxInfo = card.context || {};
-  const src = ctxInfo.source === "mcp" ? "麦当劳 MCP 实时神谕" : "内置示例神谕";
   ctx.strokeStyle = "#8A6E1E";
-  ctx.lineWidth = 1;
-  const pw = 360, ph = 64, px = cx - pw / 2, py = H - 220;
-  ctx.fillStyle = "rgba(201,162,39,.06)";
-  ctx.fillRect(px, py, pw, ph);
-  ctx.strokeRect(px, py, pw, ph);
-  ctx.beginPath(); ctx.moveTo(px, py + ph / 2); ctx.lineTo(px + pw, py + ph / 2); ctx.stroke();
+  ctx.lineWidth = 2;
+  const py = H - 140;
+  ctx.fillStyle = "rgba(201,162,39,.1)";
+  ctx.beginPath(); ctx.roundRect(52, py, W - 104, 58, 8); ctx.fill(); ctx.stroke();
   ctx.fillStyle = "#7B1F3A";
-  ctx.font = "20px 'Cinzel', 'Times New Roman', serif";
-  ctx.fillText(STYLE_TITLES[style] || "THE ORACLE", cx, py + 28);
+  ctx.font = "13px 'Cinzel', serif";
+  ctx.fillText("THE MCMEN ORACLE", cx, py + 24);
   ctx.fillStyle = "#8A6E1E";
-  ctx.font = "16px 'Noto Serif SC', 'Songti SC', serif";
-  ctx.fillText(STYLE_PLAQUE_CN[style] || "麦 门 神 谕", cx, py + 52);
+  ctx.font = "14px 'Noto Serif SC', serif";
+  const s = STYLES[card.style || currentStyle];
+  ctx.fillText(s.plaque.replace(/\s/g, "").split("").join(" "), cx, py + 46);
 
-  ctx.fillStyle = "#8A7F68";
-  ctx.font = "15px 'Noto Serif SC', 'Songti SC', serif";
-  ctx.fillText("数据源：" + src, cx, H - 120);
-  ctx.font = "13px 'Noto Serif SC', serif";
-  ctx.fillText("圣餐：" + (ctxInfo.dish || "—") + "  ｜  启示：" + (ctxInfo.activity || "—"), cx, H - 92);
+  const ctx2 = card.context || {};
+  ctx.fillStyle = "#8A6E1E";
+  ctx.font = "12px 'Noto Serif SC', serif";
+  ctx.fillText(ctx2.source === "mcp" ? "数据源：麦当劳 MCP 实时神谕" : "数据源：内置示例神谕", cx, H - 52);
 
-  // vignette
-  const g = ctx.createRadialGradient(cx, H / 2, W * 0.4, cx, H / 2, W * 0.85);
-  g.addColorStop(0, "rgba(60,42,28,0)");
-  g.addColorStop(1, "rgba(60,42,28,.18)");
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, W, H);
-
-  return cv.toDataURL("image/png");
+  const link = document.createElement("a");
+  link.download = `麦门神谕_${s.name}_${Date.now()}.png`;
+  link.href = cv.toDataURL("image/png");
+  link.click();
+  toast("图片已下载");
 }
 
-$("btn-gen").onclick = generate;
-$("btn-copy").onclick = () => {
-  if (!currentCard) return toast("请先抽牌");
-  navigator.clipboard.writeText(normalizeDigits(currentCard.text || "")).then(() => toast("箴言已复制"));
-};
-$("btn-dl").onclick = () => {
-  if (!currentCard) return toast("请先抽牌");
-  const a = document.createElement("a");
-  a.href = drawCard(currentCard);
-  a.download = `mcmen-oracle-${currentCard.style}-${Date.now()}.png`;
-  a.click();
-};
-
-async function init() {
-  await loadStyles();
-  generate();
-}
-init();
+loadStyles();
 </script>
 </body>
 </html>

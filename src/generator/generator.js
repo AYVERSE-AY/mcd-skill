@@ -1,6 +1,6 @@
-// 麦门文学生成器：MCP 上下文 → 模板渲染 → 文案
+// 麦门神谕生成器：MCP 上下文 → 模板渲染 → 文案
 // 核心原则：模板引擎先行、离线可跑；MCP 有真实数据时自动注入，无 Token 时优雅降级。
-import { getStyle, DISH_FALLBACKS } from "./templates.js";
+import { getStyle, DISH_FALLBACKS, styleNames } from "./templates.js";
 
 // 可选 seed 使生成可复现（演示录屏时用）
 function rng(seed) {
@@ -31,9 +31,9 @@ function today() {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-// 生成一篇麦门文学文案
-export function generate({ style = "verse", seed, context = {} } = {}) {
-  const def = getStyle(style) || getStyle("verse");
+// 生成一篇麦门神谕文案
+export function generate({ style = "morning", seed, context = {} } = {}) {
+  const def = getStyle(style) || getStyle("morning");
   const rand = rng(seed);
   const template = pick(def.templates, rand);
   const ctx = {
@@ -42,6 +42,8 @@ export function generate({ style = "verse", seed, context = {} } = {}) {
     activity: context.activity || "本月麦门惊喜",
     date: context.date || today(),
     num: 10 + Math.floor(rand() * 90),
+    calories: context.calories ?? "—",
+    protein: context.protein ?? "—",
     source: context.source || "fallback",
   };
   const text = template.replace(/\{(\w+)\}/g, (_, k) => ctx[k] ?? "");
@@ -50,7 +52,7 @@ export function generate({ style = "verse", seed, context = {} } = {}) {
     styleName: def.name,
     emoji: def.emoji,
     tag: def.tag,
-    blurb: def.blurb,
+    blurb: def.blerb,
     text,
     context: ctx,
     seed: seed ?? null,
@@ -58,6 +60,6 @@ export function generate({ style = "verse", seed, context = {} } = {}) {
 }
 
 export function randomStyle(seed) {
-  const names = ["verse", "liturgy", "poem", "rap", "blessing"];
+  const names = styleNames();
   return pick(names, rng(seed));
 }

@@ -32,8 +32,8 @@ async function showCampaigns(a) {
 }
 
 const HELP = `可用命令：
-  gen [风格]        生成一篇麦门文学（风格：${styleNames().join("/")}，缺省随机）
-  styles            列出全部风格
+  gen [生活签]      生成一张麦门神谕卡（生活签：${styleNames().join("/")}，缺省随机）
+  styles            列出全部生活签
   campaign          查看本月麦当劳活动（MCP 真实数据）
   status            查看数据源状态（mcp / fallback）
   help              显示帮助

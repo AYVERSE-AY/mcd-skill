@@ -100,8 +100,9 @@ export class McMenuWriter {
   }
 
   // 收集生成上下文：优先 MCP 实时数据；缺省项交给 generate 用 seed 兜底（保证可复现）
-  async collectContext() {
-    const ctx = { mealPeriod: null, dish: null, activity: null, date: null, source: "fallback" };
+  // style 用于智能选品：早餐签优先咖啡/麦满分，轻食签优先低卡，其他随机
+  async collectContext(style = "morning") {
+    const ctx = { mealPeriod: null, dish: null, activity: null, date: null, calories: null, protein: null, source: "fallback" };
     if (this.mcpOk) {
       try {
         const camps = await this.campaigns();
@@ -109,7 +110,22 @@ export class McMenuWriter {
 
         const nutrText = await this.mcp.call("list-nutrition-foods");
         const items = parseNutrition(nutrText).filter((i) => i.productName);
-        if (items.length) ctx.dish = pickRandom(items).productName;
+
+        if (items.length) {
+          let chosen;
+          if (style === "morning") {
+            const breakfast = items.filter((i) => /咖啡|麦满分|早餐|燕麦奶|猪柳|堡/.test(i.productName));
+            chosen = breakfast.length ? pickRandom(breakfast) : pickRandom(items);
+          } else if (style === "light") {
+            const light = items.filter((i) => typeof i.energyKcal === "number" && i.energyKcal < 400 && i.energyKcal > 0);
+            chosen = light.length ? pickRandom(light) : pickRandom(items);
+          } else {
+            chosen = pickRandom(items);
+          }
+          ctx.dish = chosen.productName;
+          if (typeof chosen.energyKcal === "number") ctx.calories = chosen.energyKcal;
+          if (typeof chosen.protein === "number") ctx.protein = chosen.protein;
+        }
 
         ctx.source = "mcp";
       } catch {
@@ -122,7 +138,7 @@ export class McMenuWriter {
   // 生成一篇麦门文学文案
   async write({ style, seed } = {}) {
     const s = style === "random" || style == null ? randomStyle(seed) : style;
-    const ctx = await this.collectContext();
+    const ctx = await this.collectContext(s);
     return generate({ style: s, seed, context: ctx });
   }
 }
