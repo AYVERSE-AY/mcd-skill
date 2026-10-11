@@ -2,795 +2,874 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>麦门神谕 · 每日麦门决策助手</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>麦门神谕 · McMen Oracle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #1a1c2e;
-  --card-bg: #f5e9cc;
-  --gold: #c9a227;
+  --bg-deep: #0b0d18;
+  --bg-panel: rgba(20, 22, 38, 0.72);
+  --gold: #e6b94a;
+  --gold-light: #ffdf80;
   --gold-dark: #8a6e1e;
-  --wine: #7b1f3a;
-  --ink: #2a2132;
+  --wine: #9b1b3a;
+  --wine-dark: #5c0f22;
   --parchment: #f9efd6;
+  --ink: #2a2132;
+  --cream: #fff8e7;
 }
 
-* { box-sizing: border-box; }
-body {
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
   margin: 0;
-  min-height: 100vh;
-  background: radial-gradient(circle at 30% 20%, #252844 0%, #151727 60%, #0d0f1c 100%);
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-deep);
   color: var(--parchment);
   font-family: "Noto Serif SC", "Songti SC", serif;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(1.05);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+/* 背景星空 */
+.stars {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(201, 162, 39, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 80% 20%, rgba(123, 31, 58, 0.18) 0%, transparent 35%),
+    radial-gradient(circle at 50% 80%, rgba(201, 162, 39, 0.1) 0%, transparent 45%),
+    linear-gradient(180deg, #0b0d18 0%, #14162b 50%, #0b0d18 100%);
+  z-index: -2;
+}
+.stars::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(2px 2px at 160px 120px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 230px 80px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(2px 2px at 300px 150px, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 350px 50px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(2px 2px at 420px 180px, rgba(255,255,255,0.5), transparent);
+  background-size: 450px 220px;
+  opacity: 0.6;
+}
+
+.bg-image {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center top;
+  z-index: -1;
+}
+
+.bg-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(11,13,24,0.2) 0%, rgba(11,13,24,0.1) 40%, rgba(11,13,24,0.75) 85%, rgba(11,13,24,0.95) 100%);
+}
+
+/* 通用按钮 */
+.btn-primary {
+  width: 100%;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #c41e3a 0%, #8a1529 100%);
+  color: var(--cream);
+  font-family: "Noto Serif SC", serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  box-shadow: 0 8px 28px rgba(196, 30, 58, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+  transition: transform 0.15s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(196, 30, 58, 0.5); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.btn-gold {
+  padding: 12px 24px;
+  border: 1px solid var(--gold);
+  border-radius: 24px;
+  background: rgba(201, 162, 39, 0.12);
+  color: var(--gold-light);
+  font-family: "Noto Serif SC", serif;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-gold:hover { background: rgba(201, 162, 39, 0.22); }
+
+/* 顶部 LOGO */
+.top-logo {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24px 16px 40px;
+  z-index: 10;
 }
-
-header {
-  text-align: center;
-  margin-bottom: 24px;
+.m-logo {
+  width: 46px;
+  height: 38px;
+  position: relative;
 }
-
-header h1 {
-  font-family: "Cinzel", "Times New Roman", serif;
-  font-size: 2.2rem;
-  margin: 0 0 6px;
-  letter-spacing: 4px;
+.m-logo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
+  clip-path: path("M6 36 L6 12 C6 6 10 2 16 2 C22 2 23 8 23 14 L23 36 L19 36 L19 14 C19 10 18 6 16 6 C13 6 12 9 12 12 L12 36 Z M27 36 L27 14 C27 8 28 2 34 2 C40 2 44 6 44 12 L44 36 L40 36 L40 12 C40 9 39 6 36 6 C34 6 33 10 33 14 L33 36 Z");
+  filter: drop-shadow(0 0 8px rgba(230,185,74,0.6));
+}
+.top-logo span {
+  margin-top: 4px;
+  font-size: 0.65rem;
+  letter-spacing: 3px;
   color: var(--gold);
-  text-shadow: 0 2px 12px rgba(201,162,39,.35);
+  opacity: 0.9;
 }
 
-header p {
-  margin: 0;
-  opacity: .85;
-  font-size: .95rem;
-}
-
-#status {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 5px 14px;
-  border-radius: 20px;
-  font-size: .8rem;
-  background: rgba(201,162,39,.15);
-  border: 1px solid rgba(201,162,39,.35);
-  color: var(--gold);
-}
-#status.fallback {
-  background: rgba(180,180,180,.12);
-  border-color: rgba(180,180,180,.3);
-  color: #aaa;
-}
-
-main {
-  display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 32px;
+/* 首页 */
+#screen-landing .bg-image { background-image: url("assets/design/landing.png"); }
+.landing-content {
+  margin-top: auto;
+  padding: 0 28px 48px;
   width: 100%;
-  max-width: 1120px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
 }
-
-@media (max-width: 900px) {
-  main { grid-template-columns: 1fr; }
+.landing-title {
+  text-align: center;
+  margin-bottom: 8px;
 }
-
-.panel {
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(201,162,39,.2);
-  border-radius: 16px;
-  padding: 24px;
-  backdrop-filter: blur(6px);
-}
-
-.panel h2 {
+.landing-title h1 {
   font-family: "Cinzel", serif;
-  font-size: 1.15rem;
-  color: var(--gold);
-  margin: 0 0 18px;
+  font-size: 2.4rem;
+  margin: 0;
+  letter-spacing: 6px;
+  color: var(--gold-light);
+  text-shadow: 0 2px 16px rgba(230,185,74,0.4);
+}
+.landing-title p {
+  margin: 8px 0 0;
+  font-size: 0.95rem;
+  opacity: 0.85;
+  letter-spacing: 1px;
+}
+.input-box {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 30px;
+  background: rgba(255, 248, 231, 0.95);
+  border: 1px solid rgba(201, 162, 39, 0.4);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+}
+.input-box .mic {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c41e3a, #8a1529);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cream);
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.input-box input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: "Noto Serif SC", serif;
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+.input-box input::placeholder { color: #8a6e1e; opacity: 0.7; }
+.input-box .wave {
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+  height: 16px;
+}
+.input-box .wave i {
+  width: 3px;
+  background: var(--gold-dark);
+  border-radius: 2px;
+  animation: wave 1s ease-in-out infinite;
+}
+.input-box .wave i:nth-child(1) { height: 6px; animation-delay: 0s; }
+.input-box .wave i:nth-child(2) { height: 12px; animation-delay: 0.15s; }
+.input-box .wave i:nth-child(3) { height: 8px; animation-delay: 0.3s; }
+.input-box .wave i:nth-child(4) { height: 14px; animation-delay: 0.1s; }
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.6); }
+  50% { transform: scaleY(1); }
+}
+.landing-hint {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+/* 状态选择 */
+#screen-states {
+  padding: 90px 24px 32px;
+  gap: 20px;
+}
+.states-header {
+  text-align: center;
+}
+.states-header h2 {
+  font-size: 1.45rem;
+  margin: 0 0 6px;
+  letter-spacing: 2px;
+  color: var(--gold-light);
+}
+.states-header p {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.65;
+}
+.states-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 8px;
+}
+.state-card {
+  position: relative;
+  aspect-ratio: 1 / 1.12;
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid rgba(201, 162, 39, 0.25);
+  background: var(--bg-panel);
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.state-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.state-card:active { transform: translateY(0) scale(0.98); }
+.state-card .card-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.85;
+  transition: opacity 0.3s;
+}
+.state-card:hover .card-bg { opacity: 1; }
+.state-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(11,13,24,0.85) 100%);
+}
+.state-card .card-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 14px 10px;
+  text-align: center;
+  z-index: 2;
+}
+.state-card .card-label strong {
+  display: block;
+  font-size: 1rem;
+  color: var(--gold-light);
+  margin-bottom: 3px;
+}
+.state-card .card-label span {
+  font-size: 0.65rem;
+  opacity: 0.75;
+  letter-spacing: 1px;
+}
+.state-card .corner-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(201, 162, 39, 0.2);
+  border: 1px solid rgba(201, 162, 39, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  z-index: 2;
+}
+
+.states-footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 8px;
+}
+
+/* AI 分析中 */
+#screen-analyzing .bg-image { background-image: url("assets/design/analyzing.png"); }
+.analyzing-content {
+  margin-top: auto;
+  padding: 0 32px 64px;
+  width: 100%;
+}
+.analyzing-title {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.analyzing-title h2 {
+  font-family: "Cinzel", serif;
+  font-size: 1.8rem;
+  margin: 0 0 8px;
+  color: var(--gold-light);
+  letter-spacing: 3px;
+}
+.analyzing-title p {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.65;
+}
+.analyzing-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: rgba(20, 22, 38, 0.55);
+  border: 1px solid rgba(201, 162, 39, 0.15);
+  opacity: 0.45;
+  transition: opacity 0.4s, border-color 0.4s, transform 0.4s;
+}
+.step.active {
+  opacity: 1;
+  border-color: rgba(201, 162, 39, 0.5);
+  background: rgba(20, 22, 38, 0.75);
+  transform: translateX(8px);
+}
+.step.done { opacity: 0.85; }
+.step-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(201, 162, 39, 0.15);
+  border: 1px solid rgba(201, 162, 39, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.step.active .step-icon {
+  background: rgba(201, 162, 39, 0.3);
+  box-shadow: 0 0 14px rgba(230,185,74,0.35);
+}
+.step-text h4 {
+  margin: 0 0 3px;
+  font-size: 0.95rem;
+  color: var(--cream);
+}
+.step-text p {
+  margin: 0;
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+.analyzing-glow {
+  position: absolute;
+  bottom: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(230,185,74,0.25) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+@keyframes pulse {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.6; }
+  50% { transform: translateX(-50%) scale(1.2); opacity: 1; }
+}
+
+/* 结果页 */
+#screen-result {
+  padding: 80px 20px 24px;
+  overflow-y: auto;
+}
+#screen-result::-webkit-scrollbar { width: 0; }
+.result-header {
+  text-align: center;
+  margin-bottom: 18px;
+}
+.result-header h2 {
+  font-family: "Cinzel", serif;
+  font-size: 1.3rem;
+  margin: 0 0 4px;
+  color: var(--gold-light);
   letter-spacing: 2px;
 }
-
-.question {
-  margin-bottom: 20px;
+.result-header p {
+  margin: 0;
+  font-size: 0.75rem;
+  opacity: 0.65;
 }
 
-.question label {
-  display: block;
-  font-size: .92rem;
-  margin-bottom: 10px;
-  opacity: .9;
+.oracle-card {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+  border-radius: 24px;
+  padding: 22px;
+  background: linear-gradient(180deg, #1a0f12 0%, #2a1218 100%);
+  border: 2px solid var(--gold);
+  box-shadow:
+    0 0 0 1px rgba(230,185,74,0.3),
+    0 0 40px rgba(196, 30, 58, 0.25),
+    0 20px 60px rgba(0,0,0,0.5);
+  overflow: hidden;
 }
-
-.options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.options button {
-  padding: 8px 14px;
-  border: 1px solid rgba(201,162,39,.35);
+.oracle-card::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(230,185,74,0.35);
   border-radius: 20px;
-  background: rgba(0,0,0,.2);
-  color: var(--parchment);
-  font-family: inherit;
-  font-size: .86rem;
-  cursor: pointer;
-  transition: all .2s;
+  pointer-events: none;
 }
-
-.options button:hover, .options button.selected {
-  background: rgba(201,162,39,.25);
-  border-color: var(--gold);
+.oracle-card .card-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(230,185,74,0.1) 0%, transparent 50%, rgba(196,30,58,0.08) 100%);
+  pointer-events: none;
+}
+.card-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.card-m {
+  width: 42px;
+  height: 34px;
+  margin-bottom: 10px;
+  position: relative;
+}
+.card-m::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
+  clip-path: path("M5 32 L5 10 C5 5 9 2 14 2 C19 2 20 7 20 12 L20 32 L17 32 L17 12 C17 8 16 5 14 5 C11 5 10 8 10 10 L10 32 Z M24 32 L24 12 C24 7 25 2 30 2 C35 2 39 5 39 10 L39 32 L36 32 L36 10 C36 8 35 5 32 5 C30 5 29 8 29 12 L29 32 Z");
+  filter: drop-shadow(0 0 6px rgba(230,185,74,0.5));
+}
+.card-image-wrap {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: 3px solid var(--gold);
+  padding: 6px;
+  background: rgba(0,0,0,0.2);
+  box-shadow: 0 0 30px rgba(230,185,74,0.2);
+  margin-bottom: 16px;
+}
+.card-image-wrap img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.card-title-banner {
+  width: 100%;
+  padding: 10px 16px;
+  text-align: center;
+  background: linear-gradient(90deg, transparent 0%, rgba(196,30,58,0.25) 20%, rgba(196,30,58,0.35) 50%, rgba(196,30,58,0.25) 80%, transparent 100%);
+  border-top: 1px solid rgba(230,185,74,0.3);
+  border-bottom: 1px solid rgba(230,185,74,0.3);
+  margin-bottom: 14px;
+}
+.card-title-banner h3 {
+  margin: 0;
+  font-size: 1.35rem;
+  color: var(--gold-light);
+  letter-spacing: 2px;
+}
+.card-title-banner span {
+  font-size: 0.7rem;
   color: var(--gold);
+  opacity: 0.85;
+}
+.card-poem {
+  text-align: center;
+  font-size: 0.95rem;
+  line-height: 1.85;
+  color: var(--cream);
+  margin-bottom: 16px;
+  padding: 0 6px;
+}
+.card-dish {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 30px;
+  background: rgba(255,248,231,0.1);
+  border: 1px solid rgba(230,185,74,0.3);
+  margin-bottom: 16px;
+}
+.card-dish .dish-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+.card-dish .dish-info { flex: 1; }
+.card-dish .dish-info strong {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--gold-light);
+}
+.card-dish .dish-info span {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+.card-dish .arrow {
+  color: var(--gold);
+  font-size: 1.1rem;
+}
+.nutrition-pills {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 6px;
+}
+.nutrition-pills .pill {
+  flex: 1;
+  text-align: center;
+  padding: 10px 6px;
+  border-radius: 12px;
+  background: rgba(255,248,231,0.92);
+  color: var(--ink);
+}
+.nutrition-pills .pill span {
+  display: block;
+  font-size: 0.65rem;
+  color: #8a6e1e;
+  margin-bottom: 2px;
+}
+.nutrition-pills .pill strong {
+  font-size: 0.95rem;
+  color: var(--wine);
 }
 
-.actions {
+.result-actions {
   display: flex;
   gap: 12px;
   margin-top: 22px;
+  justify-content: center;
 }
-
-.actions button {
+.result-actions .btn-gold {
   flex: 1;
-  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.result-footer {
+  margin-top: 18px;
+  text-align: center;
+}
+.result-footer button {
+  background: transparent;
   border: none;
-  border-radius: 8px;
+  color: var(--gold);
   font-family: "Noto Serif SC", serif;
-  font-size: 1rem;
+  font-size: 0.8rem;
   cursor: pointer;
-  transition: transform .15s, box-shadow .2s;
+  opacity: 0.7;
+  transition: opacity 0.2s;
 }
+.result-footer button:hover { opacity: 1; }
 
-.actions button.primary {
-  background: linear-gradient(135deg, #c9a227 0%, #8a6e1e 100%);
-  color: #151727;
-  font-weight: 700;
-}
-
-.actions button.secondary {
-  background: rgba(255,255,255,.1);
-  color: var(--parchment);
-  border: 1px solid rgba(255,255,255,.2);
-}
-
-.actions button:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,.25); }
-.actions button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-
-.recommendation {
-  display: none;
-  margin-top: 18px;
-  padding: 16px;
-  border-radius: 12px;
-  background: rgba(201,162,39,.12);
-  border: 1px solid rgba(201,162,39,.25);
-}
-
-.recommendation.show { display: block; }
-
-.recommendation h3 {
-  margin: 0 0 8px;
-  font-family: "Cinzel", serif;
-  color: var(--gold);
-  font-size: 1rem;
-}
-
-.recommendation p {
-  margin: 0;
-  font-size: .88rem;
-  line-height: 1.6;
-  opacity: .9;
-}
-
-.style-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 14px 0;
-}
-
-.style-chip {
-  padding: 7px 12px;
-  border: 1px solid rgba(201,162,39,.35);
-  border-radius: 18px;
-  background: rgba(0,0,0,.2);
-  color: var(--parchment);
-  font-family: inherit;
-  font-size: .8rem;
-  cursor: pointer;
-  transition: all .2s;
-}
-
-.style-chip .num {
-  display: inline-block;
-  margin-right: 5px;
-  color: var(--gold);
-  font-family: "Cinzel", serif;
-  font-weight: 700;
-}
-
-.style-chip:hover, .style-chip.active {
-  background: rgba(201,162,39,.25);
-  border-color: var(--gold);
-}
-
-.card-stage {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-#card {
-  width: 360px;
-  height: 630px;
-  background: var(--card-bg);
-  border-radius: 18px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.5), inset 0 0 40px rgba(123,31,58,.08);
-  position: relative;
-  overflow: hidden;
-  color: var(--ink);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 28px;
-}
-
-.card-border {
-  position: absolute;
-  inset: 12px;
-  border: 3px solid var(--gold);
-  border-radius: 14px;
-  pointer-events: none;
-}
-
-.card-border::after {
-  content: "";
-  position: absolute;
-  inset: 8px;
-  border: 1px solid var(--gold-dark);
-  border-radius: 10px;
-}
-
-.corner {
-  position: absolute;
-  width: 46px;
-  height: 46px;
-  color: var(--wine);
-  pointer-events: none;
-}
-
-.corner.tl { top: 18px; left: 18px; }
-.corner.tr { top: 18px; right: 18px; transform: rotate(90deg); }
-.corner.br { bottom: 18px; right: 18px; transform: rotate(180deg); }
-.corner.bl { bottom: 18px; left: 18px; transform: rotate(270deg); }
-
-.roman {
-  font-family: "Cinzel", serif;
-  font-size: 2.4rem;
-  color: var(--wine);
-  margin-top: 26px;
-  z-index: 1;
-}
-
-.style-name {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--ink);
-  margin-top: 4px;
-  z-index: 1;
-}
-
-.style-en {
-  font-family: "Cinzel", serif;
-  font-size: .72rem;
-  color: var(--gold-dark);
-  letter-spacing: 2px;
-  margin-top: 3px;
-  z-index: 1;
-}
-
-.symbol-frame {
-  width: 220px;
-  height: 220px;
-  margin-top: 18px;
-  border: 2px solid var(--gold-dark);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  z-index: 1;
-  overflow: hidden;
-  background: rgba(201,162,39,.06);
-}
-
-.symbol-frame::before {
-  content: "";
-  position: absolute;
-  inset: 10px;
-  border: 1px dashed rgba(138,110,30,.5);
-  border-radius: 50%;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.symbol-frame img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-.card-text {
-  flex: 1;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 10px;
-  z-index: 1;
-  text-align: center;
-}
-
-.card-text p {
-  margin: 0;
-  font-size: 1.05rem;
-  line-height: 1.75;
-  color: var(--ink);
-}
-
-.quote-open, .quote-close {
-  font-family: "Cinzel", serif;
-  font-size: 2rem;
-  color: var(--gold-dark);
-  line-height: 1;
-}
-
-.plaque {
-  width: 86%;
-  padding: 10px 16px;
-  border: 2px solid var(--gold-dark);
-  border-radius: 8px;
-  text-align: center;
-  background: rgba(201,162,39,.1);
-  z-index: 1;
-}
-
-.plaque-en {
-  font-family: "Cinzel", serif;
-  font-size: .7rem;
-  letter-spacing: 1.5px;
-  color: var(--wine);
-}
-
-.plaque-cn {
-  font-size: .8rem;
-  color: var(--gold-dark);
-  letter-spacing: 3px;
-  margin-top: 2px;
-}
-
-.source {
-  font-size: .65rem;
-  color: var(--gold-dark);
-  margin-top: 10px;
-  z-index: 1;
-}
-
-.card-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.card-actions button {
-  padding: 10px 18px;
-  border-radius: 8px;
-  border: 1px solid rgba(201,162,39,.4);
-  background: rgba(0,0,0,.3);
-  color: var(--parchment);
-  font-family: inherit;
-  font-size: .9rem;
-  cursor: pointer;
-}
-
-.card-actions button:hover { background: rgba(201,162,39,.2); }
-
+/* Toast */
 #toast {
   position: fixed;
-  bottom: 28px;
+  bottom: 32px;
   left: 50%;
   transform: translateX(-50%) translateY(20px);
-  background: rgba(0,0,0,.8);
-  color: var(--parchment);
+  background: rgba(0,0,0,0.85);
+  color: var(--cream);
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: 20px;
+  font-size: 0.85rem;
   opacity: 0;
   pointer-events: none;
-  transition: all .3s;
+  transition: all 0.3s;
+  z-index: 1000;
+  border: 1px solid rgba(201,162,39,0.3);
 }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* 问卷浮层 */
-.quiz-overlay {
+/* 加载层 */
+#global-loader {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  background: rgba(11,13,24,0.85);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(13,15,28,.32);
-  backdrop-filter: blur(16px) saturate(1.2);
-  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  z-index: 2000;
   opacity: 0;
   pointer-events: none;
-  transition: opacity .6s ease;
+  transition: opacity 0.3s;
 }
-.quiz-overlay.show {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.quiz-modal {
-  width: min(520px, 90vw);
-  padding: 36px 36px 30px;
-  border-radius: 28px;
-  background: rgba(255,255,255,.055);
-  border: 1px solid rgba(255,255,255,.15);
-  box-shadow: 0 32px 90px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.06);
-  transform: translateY(30px) scale(.94);
-  transition: transform .65s cubic-bezier(.16,1,.3,1), opacity .55s ease;
-  opacity: 0;
-  overflow: hidden;
-}
-.quiz-overlay.show .quiz-modal {
-  transform: translateY(0) scale(1);
-  opacity: 1;
-}
-
-.quiz-modal h2 {
-  font-family: "Cinzel", serif;
-  font-size: 1.45rem;
-  color: var(--gold);
-  margin: 0 0 6px;
-  text-align: center;
-  letter-spacing: 3px;
-}
-
-.quiz-modal .quiz-sub {
-  text-align: center;
-  font-size: .88rem;
-  opacity: .65;
-  margin-bottom: 22px;
-}
-
-.quiz-progress {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 28px;
-}
-
-.quiz-progress .dot {
-  width: 8px;
-  height: 8px;
+#global-loader.show { opacity: 1; pointer-events: auto; }
+.loader-spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid rgba(201,162,39,0.2);
+  border-top-color: var(--gold);
   border-radius: 50%;
-  background: rgba(255,255,255,.18);
-  transition: all .35s ease;
+  animation: spin 1s linear infinite;
 }
-.quiz-progress .dot.active {
-  width: 28px;
-  border-radius: 4px;
-  background: var(--gold);
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.quiz-slides {
-  position: relative;
-  min-height: 240px;
-}
-
-.quiz-slide {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transform: translateX(40px);
-  pointer-events: none;
-  transition: opacity .45s ease, transform .5s cubic-bezier(.16,1,.3,1);
-}
-.quiz-slide.active {
-  opacity: 1;
-  transform: translateX(0);
-  pointer-events: auto;
-  position: relative;
-}
-.quiz-slide.prev {
-  transform: translateX(-40px);
-}
-
-.quiz-modal .question {
-  margin: 0;
-  padding: 0;
-  border: none;
-}
-
-.quiz-modal .question label {
-  display: block;
-  font-size: 1.05rem;
-  margin-bottom: 18px;
-  color: var(--parchment);
-  text-align: center;
-  letter-spacing: 1px;
-}
-
-.quiz-modal .options {
-  justify-content: center;
-}
-
-.quiz-modal .options button {
-  background: rgba(255,255,255,.05);
-  border-color: rgba(255,255,255,.14);
-  padding: 10px 18px;
-  font-size: .9rem;
-}
-.quiz-modal .options button:hover, .quiz-modal .options button.selected {
-  background: rgba(201,162,39,.18);
-  border-color: var(--gold);
-  color: var(--gold);
-  transform: translateY(-1px);
-}
-
-.quiz-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 28px;
-  gap: 12px;
-}
-
-.quiz-nav button {
-  padding: 10px 22px;
-  border-radius: 8px;
-  font-family: "Noto Serif SC", serif;
-  font-size: .95rem;
-  cursor: pointer;
-  transition: all .2s;
-  border: none;
-}
-
-.quiz-nav .next {
-  background: linear-gradient(135deg, #c9a227 0%, #8a6e1e 100%);
-  color: #151727;
-  font-weight: 700;
-}
-.quiz-nav .next:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(201,162,39,.25); }
-.quiz-nav .next:disabled { opacity: .35; cursor: not-allowed; }
-
-.quiz-nav .back {
-  background: transparent;
-  color: var(--parchment);
-  border: 1px solid rgba(255,255,255,.2);
-}
-.quiz-nav .back:hover { background: rgba(255,255,255,.08); }
-
-.quiz-nav .skip {
-  background: transparent;
-  color: var(--parchment);
-  font-size: .82rem;
-  opacity: .55;
-}
-.quiz-nav .skip:hover { opacity: .9; text-decoration: underline; }
-
-.recommend-toast {
-  position: fixed;
-  top: 24px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-20px);
-  z-index: 90;
-  padding: 14px 24px;
-  border-radius: 30px;
-  background: rgba(26,28,46,.92);
-  border: 1px solid rgba(201,162,39,.35);
-  box-shadow: 0 10px 40px rgba(0,0,0,.35);
-  color: var(--parchment);
-  font-size: .92rem;
-  opacity: 0;
-  pointer-events: none;
-  transition: all .4s cubic-bezier(.2,.8,.2,1);
-  text-align: center;
-  max-width: min(560px, 92vw);
-}
-.recommend-toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-.recommend-toast strong {
-  color: var(--gold);
-}
-
-.panel .section-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.panel .section-title button {
-  font-size: .75rem;
-  padding: 4px 10px;
-  border-radius: 12px;
-  background: transparent;
-  border: 1px solid rgba(201,162,39,.35);
-  color: var(--gold);
-  cursor: pointer;
+@media (min-width: 480px) {
+  #app {
+    max-width: 430px;
+    margin: 0 auto;
+    border-left: 1px solid rgba(201,162,39,0.1);
+    border-right: 1px solid rgba(201,162,39,0.1);
+  }
 }
 </style>
 </head>
 <body>
 
-<!-- 问卷浮层 -->
-<div class="quiz-overlay show" id="quiz-overlay">
-  <div class="quiz-modal">
-    <h2>今日麦门神谕</h2>
-    <p class="quiz-sub">回答 4 个小问题，为你推荐一张生活签</p>
+<div id="app">
+  <div class="stars"></div>
 
-    <div class="quiz-progress" id="quiz-progress">
-      <div class="dot active"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
+  <!-- 首页 -->
+  <section class="screen active" id="screen-landing">
+    <div class="bg-image"></div>
+    <div class="top-logo"><div class="m-logo"></div><span>McMEN ORACLE</span></div>
+    <div class="landing-content">
+      <div class="landing-title">
+        <h1>麦门神谕</h1>
+        <p>让 AI 读懂你的今天，再决定你的一餐</p>
+      </div>
+      <div class="input-box">
+        <div class="mic">🎙</div>
+        <input type="text" id="landing-input" placeholder="试着说说你现在的状态…" autocomplete="off">
+        <div class="wave"><i></i><i></i><i></i><i></i></div>
+      </div>
+      <button class="btn-primary" id="btn-start">开始抽取我的麦门神谕 →</button>
+      <div class="landing-hint">每一种状态，都会得到专属的麦当劳神谕推荐</div>
     </div>
+  </section>
 
-    <div class="quiz-slides" id="quiz-slides">
-      <div class="quiz-slide active" data-idx="0">
-        <div class="question" data-q="time">
-          <label>现在是什么时间？</label>
-          <div class="options">
-            <button data-v="morning">早上（7-11点）</button>
-            <button data-v="noon">中午（11-14点）</button>
-            <button data-v="afternoon">下午（14-17点）</button>
-            <button data-v="evening">晚上（17-21点）</button>
-            <button data-v="night">深夜（21点后）</button>
-          </div>
-        </div>
+  <!-- 状态选择 -->
+  <section class="screen" id="screen-states">
+    <div class="top-logo"><div class="m-logo"></div><span>McMEN ORACLE</span></div>
+    <div class="states-header">
+      <h2>今天的你，属于哪一种状态？</h2>
+      <p>六大生活签 · 快速选择或自由输入</p>
+    </div>
+    <div class="states-grid" id="states-grid"></div>
+    <div class="states-footer">
+      <button class="btn-gold" id="btn-custom-state">✎ 自由输入状态</button>
+    </div>
+  </section>
+
+  <!-- AI 分析中 -->
+  <section class="screen" id="screen-analyzing">
+    <div class="bg-image"></div>
+    <div class="top-logo"><div class="m-logo"></div><span>McMEN ORACLE</span></div>
+    <div class="analyzing-glow"></div>
+    <div class="analyzing-content">
+      <div class="analyzing-title">
+        <h2>AI 分析中</h2>
+        <p>动态加载 · 展示思考过程</p>
       </div>
+      <div class="analyzing-steps" id="analyzing-steps"></div>
+    </div>
+  </section>
 
-      <div class="quiz-slide" data-idx="1">
-        <div class="question" data-q="mood">
-          <label>你现在的状态？</label>
-          <div class="options">
-            <button data-v="tired">困倦没精神</button>
-            <button data-v="confused">纠结吃啥</button>
-            <button data-v="stressed">压力大</button>
-            <button data-v="relaxed">想放松</button>
-            <button data-v="happy">开心想分享</button>
-            <button data-v="disciplined">自律/健身中</button>
-            <button data-v="lazy">想摸鱼</button>
-          </div>
+  <!-- 结果页 -->
+  <section class="screen" id="screen-result">
+    <div class="top-logo"><div class="m-logo"></div><span>McMEN ORACLE</span></div>
+    <div class="result-header">
+      <h2>你的今日神谕已生成</h2>
+      <p>麦门神谕，为你点亮今日时刻</p>
+    </div>
+    <div class="oracle-card" id="oracle-card">
+      <div class="card-shine"></div>
+      <div class="card-inner">
+        <div class="card-m"></div>
+        <div class="card-image-wrap"><img id="result-image" src="" alt="神谕卡面"></div>
+        <div class="card-title-banner">
+          <h3 id="result-title">--</h3>
+          <span id="result-subtitle">祈福体</span>
         </div>
-      </div>
-
-      <div class="quiz-slide" data-idx="2">
-        <div class="question" data-q="scene">
-          <label>你在什么场景？</label>
-          <div class="options">
-            <button data-v="commute">通勤/路上</button>
-            <button data-v="office">办公室</button>
-            <button data-v="home">家里</button>
-            <button data-v="party">聚会</button>
-            <button data-v="gym">健身</button>
-            <button data-v="outdoor">户外</button>
+        <div class="card-poem" id="result-poem">点击下方按钮，抽取今日麦门神谕…</div>
+        <div class="card-dish">
+          <div class="dish-icon" id="dish-icon">🍔</div>
+          <div class="dish-info">
+            <strong id="result-dish">--</strong>
+            <span id="result-activity">--</span>
           </div>
+          <div class="arrow">›</div>
         </div>
-      </div>
-
-      <div class="quiz-slide" data-idx="3">
-        <div class="question" data-q="health">
-          <label>想要健康低卡一点吗？</label>
-          <div class="options">
-            <button data-v="yes">是的，要低卡</button>
-            <button data-v="no">不用，开心吃</button>
-          </div>
-        </div>
+        <div class="nutrition-pills" id="nutrition-pills"></div>
       </div>
     </div>
-
-    <div class="quiz-nav">
-      <button class="back" id="btn-quiz-back" style="visibility:hidden;">上一题</button>
-      <button class="skip" id="btn-skip-quiz">跳过问卷</button>
-      <button class="next" id="btn-quiz-next" disabled>下一题</button>
+    <div class="result-actions">
+      <button class="btn-gold" id="btn-download">⬇ 下载神谕卡</button>
+      <button class="btn-gold" id="btn-share">↗ 分享给好友</button>
     </div>
-  </div>
+    <div class="result-footer">
+      <button id="btn-restart">继续探索更多神谕 ↓</button>
+    </div>
+  </section>
 </div>
 
-<div class="recommend-toast" id="recommend-toast"></div>
-
-<header>
-  <h1>麦 门 神 谕</h1>
-  <p>每日麦门决策助手 · 抽一张生活签，决定今天吃什么</p>
-  <span id="status">连接中…</span>
-</header>
-
-<main>
-  <section class="panel">
-    <div class="section-title">
-      <h2 style="margin:0">推荐结果</h2>
-      <button id="btn-retake">重新测评</button>
-    </div>
-    <p id="rec-summary" style="margin-top:12px;font-size:.9rem;opacity:.85;">完成左侧问卷后，会为你推荐最适合今日的生活签。</p>
-
-    <h2 style="margin-top:22px;">或直接选择</h2>
-    <div class="style-row" id="styles"></div>
-  </section>
-
-  <section class="card-stage">
-    <div id="card">
-      <div class="card-border"></div>
-      <svg class="corner tl" viewBox="0 0 46 46"><path d="M4 42V10C4 6 6 4 10 4H42" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" fill="currentColor"/></svg>
-      <svg class="corner tr" viewBox="0 0 46 46"><path d="M4 42V10C4 6 6 4 10 4H42" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" fill="currentColor"/></svg>
-      <svg class="corner br" viewBox="0 0 46 46"><path d="M4 42V10C4 6 6 4 10 4H42" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" fill="currentColor"/></svg>
-      <svg class="corner bl" viewBox="0 0 46 46"><path d="M4 42V10C4 6 6 4 10 4H42" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" fill="currentColor"/></svg>
-
-      <div class="roman" id="c-roman">I</div>
-      <div class="style-name" id="c-title">早八续命签</div>
-      <div class="style-en" id="c-subtitle">THE MORNING AWAKENING</div>
-
-      <div class="symbol-frame">
-        <img id="c-image" src="" alt="神谕卡面">
-      </div>
-
-      <div class="card-text">
-        <span class="quote-open">“</span>
-        <p id="c-text">点击下方按钮，抽取今日麦门神谕…</p>
-        <span class="quote-close">”</span>
-      </div>
-
-      <div class="plaque">
-        <div class="plaque-en" id="c-plaque-en">THE MCMEN ORACLE</div>
-        <div class="plaque-cn" id="c-plaque-cn">麦 门 神 谕</div>
-      </div>
-
-      <div class="source" id="c-source">数据源：等待连接…</div>
-    </div>
-
-    <div class="card-actions">
-      <button id="btn-gen">✨ 生成神谕</button>
-      <button id="btn-download">⬇ 下载图片</button>
-      <button id="btn-copy">📋 复制文字</button>
-    </div>
-  </section>
-</main>
-
 <div id="toast"></div>
+<div id="global-loader"><div class="loader-spinner"></div></div>
 
 <script>
 const STYLES = {
-  morning: { name: "早八续命签", en: "THE MORNING AWAKENING", plaque: "晨 起 神 谕", roman: "I", visual: "modern", image: "assets/cards/card-1.png" },
-  lunch:   { name: "中午干饭签", en: "THE LUNCH DECREE",      plaque: "干 饭 神 谕", roman: "II", visual: "fantasy", image: "assets/cards/card-2.png" },
-  afternoon:{ name: "下午茶摸鱼签", en: "THE AFTERNOON SNEAK", plaque: "摸 鱼 神 谕", roman: "III", visual: "classic", image: "assets/cards/card-3.png" },
-  overtime:{ name: "加班回血签", en: "THE NIGHT SHIFT CURE",  plaque: "回 血 神 谕", roman: "IV", visual: "modern", image: "assets/cards/card-4.png" },
-  feast:   { name: "周末欢聚签", en: "THE WEEKEND FEAST",     plaque: "欢 聚 神 谕", roman: "V", visual: "fantasy", image: "assets/cards/card-5.png" },
-  light:   { name: "自律轻食签", en: "THE LIGHT CHOICE",      plaque: "轻 食 神 谕", roman: "VI", visual: "classic", image: "assets/cards/card-6.png" }
+  morning:   { name: "早八续命签", en: "THE MORNING AWAKENING", plaque: "晨 起 神 谕", roman: "I",  image: "assets/cards/card-1.png" },
+  lunch:     { name: "中午干饭签", en: "THE LUNCH DECREE",      plaque: "干 饭 神 谕", roman: "II", image: "assets/cards/card-2.png" },
+  afternoon: { name: "下午茶摸鱼签", en: "THE AFTERNOON SNEAK", plaque: "摸 鱼 神 谕", roman: "III",image: "assets/cards/card-3.png" },
+  overtime:  { name: "加班回血签", en: "THE NIGHT SHIFT CURE",  plaque: "回 血 神 谕", roman: "IV", image: "assets/cards/card-4.png" },
+  feast:     { name: "周末欢聚签", en: "THE WEEKEND FEAST",     plaque: "欢 聚 神 谕", roman: "V",  image: "assets/cards/card-5.png" },
+  light:     { name: "自律轻食签", en: "THE LIGHT CHOICE",      plaque: "轻 食 神 谕", roman: "VI", image: "assets/cards/card-6.png" }
 };
 
+const STATES = [
+  { key: "study",     label: "学习备考", sub: "积累知识·照亮未来",   icon: "📚", bg: "assets/design/states.png", answers: { time: "morning", mood: "disciplined", scene: "home", health: "no" } },
+  { key: "overtime",  label: "加班工作", sub: "专注投入·持续向前",   icon: "💼", bg: "assets/design/states.png", answers: { time: "night", mood: "stressed", scene: "office", health: "no" } },
+  { key: "relax",     label: "放松休闲", sub: "享受当下·充电再出发", icon: "☕", bg: "assets/design/states.png", answers: { time: "afternoon", mood: "relaxed", scene: "home", health: "no" } },
+  { key: "social",    label: "社交聚会", sub: "相聚时刻·快乐加倍",   icon: "🥂", bg: "assets/design/states.png", answers: { time: "evening", mood: "happy", scene: "party", health: "no" } },
+  { key: "low",       label: "情绪低落", sub: "允许低落·也会放晴",   icon: "🌧", bg: "assets/design/states.png", answers: { time: "evening", mood: "stressed", scene: "home", health: "no" } },
+  { key: "reward",    label: "奖励自己", sub: "辛苦了·值得更好",     icon: "🎁", bg: "assets/design/states.png", answers: { time: "noon", mood: "happy", scene: "home", health: "no" } }
+];
+
+const STEPS = [
+  { icon: "🕐", title: "识别时间场景",    get: (a) => a.time ? `${timeText(a.time)} · ${periodText(a.time)}` : "正在感知时间…" },
+  { icon: "💗", title: "分析情绪状态",    get: (a) => a.mood ? `${moodText(a.mood)} · ${moodDesc(a.mood)}` : "读取你的心情…" },
+  { icon: "🌟", title: "理解核心需求",    get: (a) => a.scene ? `${sceneText(a.scene)} · ${needText(a)}` : "理解你的需求…" },
+  { icon: "🃏", title: "匹配塔罗风格",    get: (a) => "祈福体 · 治愈鼓励" },
+  { icon: "🍔", title: "准备调用麦当劳 MCP 数据", get: (a) => "活动 · 商品 · 营养" }
+];
+
+function timeText(k) {
+  const map = { morning: "早上", noon: "中午", afternoon: "下午", evening: "晚上", night: "深夜" };
+  return map[k] || k;
+}
+function periodText(k) {
+  const map = { morning: "7-11点", noon: "11-14点", afternoon: "14-17点", evening: "17-21点", night: "21点后" };
+  return map[k] || "";
+}
+function moodText(k) {
+  const map = { tired: "困倦", confused: "纠结", stressed: "压力大", relaxed: "放松", happy: "开心", disciplined: "自律", lazy: "想摸鱼" };
+  return map[k] || k;
+}
+function moodDesc(k) {
+  const map = { tired: "需要续命", confused: "选择困难", stressed: "需要回血", relaxed: "享受当下", happy: "值得分享", disciplined: "健康优先", lazy: "摸鱼一下" };
+  return map[k] || "";
+}
+function sceneText(k) {
+  const map = { commute: "通勤", office: "办公室", home: "家里", party: "聚会", gym: "健身", outdoor: "户外" };
+  return map[k] || k;
+}
+function needText(a) {
+  if (a.health === "yes") return "自律轻食";
+  if (a.mood === "tired") return "早八续命";
+  if (a.mood === "stressed") return "加班回血";
+  if (a.mood === "happy") return "欢聚分享";
+  if (a.mood === "relaxed" || a.mood === "lazy") return "下午茶摸鱼";
+  return "命中注定";
+}
+
+let currentAnswers = {};
 let currentStyle = "morning";
 let currentCard = null;
-let answers = {};
-let currentSlide = 0;
-const TOTAL_SLIDES = 4;
 
 const $ = (id) => document.getElementById(id);
 function toast(msg) {
   const t = $("toast");
   t.textContent = msg;
   t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 1800);
+  setTimeout(() => t.classList.remove("show"), 2000);
+}
+function showLoader(show) { $("global-loader").classList.toggle("show", show); }
+
+function switchScreen(name) {
+  document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
+  $(`screen-${name}`).classList.add("active");
 }
 
-async function fetchJSON(url, opts = {}, timeout = 12000) {
+async function fetchJSON(url, opts = {}, timeout = 15000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeout);
   try {
@@ -802,228 +881,116 @@ async function fetchJSON(url, opts = {}, timeout = 12000) {
   }
 }
 
-function getCurrentQuestionKey() {
-  const slide = document.querySelector(`.quiz-slide[data-idx="${currentSlide}"]`);
-  return slide?.querySelector(".question")?.dataset.q;
-}
-
-function updateNextButton() {
-  const key = getCurrentQuestionKey();
-  const next = $("btn-quiz-next");
-  const hasAnswer = key && answers[key];
-  next.disabled = !hasAnswer;
-  next.textContent = currentSlide === TOTAL_SLIDES - 1 ? "获取推荐" : "下一题";
-}
-
-function updateSlide(dir = 1) {
-  const slides = document.querySelectorAll(".quiz-slide");
-  const dots = document.querySelectorAll(".quiz-progress .dot");
-
-  slides.forEach((s, i) => {
-    s.classList.remove("active", "prev");
-    if (i < currentSlide) s.classList.add("prev");
-    if (i === currentSlide) s.classList.add("active");
+function renderStates() {
+  const grid = $("states-grid");
+  grid.innerHTML = "";
+  STATES.forEach((s, i) => {
+    const card = document.createElement("div");
+    card.className = "state-card";
+    card.innerHTML = `
+      <div class="card-bg" style="background-image:url('${s.bg}');background-position:${(i % 2) * 100}% ${Math.floor(i / 2) * 50}%"></div>
+      <div class="corner-icon">${s.icon}</div>
+      <div class="card-label"><strong>${s.label}</strong><span>${s.sub}</span></div>
+    `;
+    card.addEventListener("click", () => startAnalyze(s.answers, s.label));
+    grid.appendChild(card);
   });
-
-  dots.forEach((d, i) => d.classList.toggle("active", i === currentSlide));
-
-  $("btn-quiz-back").style.visibility = currentSlide === 0 ? "hidden" : "visible";
-  updateNextButton();
 }
 
-function goNext() {
-  const key = getCurrentQuestionKey();
-  if (!key || !answers[key]) return;
-  if (currentSlide < TOTAL_SLIDES - 1) {
-    currentSlide++;
-    updateSlide(1);
-  } else {
-    recommend();
+async function startAnalyze(answers, stateLabel) {
+  currentAnswers = answers;
+  switchScreen("analyzing");
+  renderAnalyzingSteps(0);
+
+  const freeText = ($("landing-input").value || "").trim();
+  if (freeText) currentAnswers.freeText = freeText;
+
+  // 逐步动画
+  for (let i = 0; i < STEPS.length; i++) {
+    await wait(750);
+    renderAnalyzingSteps(i + 1);
   }
-}
 
-function goBack() {
-  if (currentSlide > 0) {
-    currentSlide--;
-    updateSlide(-1);
-  }
-}
-
-function selectOption(btn) {
-  const q = btn.closest(".question");
-  const key = q.dataset.q;
-  q.querySelectorAll("button").forEach((b) => b.classList.remove("selected"));
-  btn.classList.add("selected");
-  answers[key] = btn.dataset.v;
-  updateNextButton();
-}
-
-document.querySelectorAll(".quiz-slide .options button").forEach((btn) => {
-  btn.addEventListener("click", () => selectOption(btn));
-});
-
-async function loadStyles() {
   try {
-    const data = await fetchJSON("/api/styles");
-    const box = $("styles");
-    box.innerHTML = "";
-    data.styles.forEach((key) => {
-      const s = STYLES[key] || STYLES.morning;
-      const chip = document.createElement("button");
-      chip.className = "style-chip" + (key === currentStyle ? " active" : "");
-      chip.innerHTML = `<span class="num">${s.roman}</span>${s.name}`;
-      chip.onclick = () => {
-        currentStyle = key;
-        box.querySelectorAll(".style-chip").forEach((c) => c.classList.remove("active"));
-        chip.classList.add("active");
-        generate();
-      };
-      box.appendChild(chip);
-    });
-    const status = $("status");
-    status.textContent = data.status.mcp ? "已连接麦当劳 MCP（实时数据）" : "示例模式（无 MCP 实时数据）";
-    status.classList.toggle("fallback", !data.status.mcp);
-    if (data.styles.length) currentStyle = data.styles[0];
-    renderEmptyCard();
-  } catch (e) {
-    $("status").textContent = "无法连接服务";
-    $("status").classList.add("fallback");
-  }
-}
-
-function closeQuiz() {
-  $("quiz-overlay").classList.remove("show");
-}
-
-function openQuiz() {
-  $("quiz-overlay").classList.add("show");
-}
-
-function showRecommendToast(name, reason) {
-  const el = $("recommend-toast");
-  el.innerHTML = `为你推荐 <strong>${name}</strong> · ${reason}`;
-  el.classList.add("show");
-  setTimeout(() => el.classList.remove("show"), 6000);
-}
-
-async function recommend() {
-  const nextBtn = $("btn-quiz-next");
-  nextBtn.disabled = true;
-  nextBtn.textContent = "推荐中…";
-  try {
-    const data = await fetchJSON("/api/recommend", {
+    const rec = await fetchJSON("/api/recommend", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(answers)
+      body: JSON.stringify(currentAnswers)
     });
-    currentStyle = data.style;
-    const s = STYLES[data.style];
-
-    // 更新左侧推荐摘要
-    $("rec-summary").innerHTML = `推荐抽取 <strong style="color:var(--gold)">${s.name}</strong>。<br>${data.reason}`;
-
-    // 高亮风格按钮
-    $("styles").querySelectorAll(".style-chip").forEach((c) => c.classList.remove("active"));
-    const active = Array.from($("styles").children).find((c) => c.textContent.includes(s.name));
-    if (active) active.classList.add("active");
-
-    closeQuiz();
-    showRecommendToast(s.name, data.reason);
-
-    // 自动抽取
-    setTimeout(() => generate(), 700);
-  } catch (e) {
-    toast("推荐失败：" + e.message);
-    nextBtn.disabled = false;
-    nextBtn.textContent = "获取推荐";
-  }
-}
-
-async function generate() {
-  const btn = $("btn-gen");
-  btn.disabled = true;
-  try {
-    const data = await fetchJSON("/api/write", {
+    currentStyle = rec.style;
+    const card = await fetchJSON("/api/write", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ style: currentStyle })
+      body: JSON.stringify({ style: rec.style })
     });
-    currentCard = data;
-    renderCard(data);
+    currentCard = card;
+    renderResult(card, stateLabel);
+    switchScreen("result");
   } catch (e) {
-    toast("生成失败：" + e.message);
-  } finally {
-    btn.disabled = false;
+    toast("神谕生成失败：" + e.message);
+    switchScreen("states");
   }
 }
 
-function renderEmptyCard() {
-  const s = STYLES[currentStyle] || STYLES.morning;
-  $("c-roman").textContent = s.roman;
-  $("c-title").textContent = s.name;
-  $("c-subtitle").textContent = s.en;
-  $("c-plaque-en").textContent = "THE MCMEN ORACLE";
-  $("c-plaque-cn").textContent = s.plaque;
-  $("c-image").src = s.image;
-  $("c-text").textContent = "点击下方按钮，抽取今日麦门神谕…";
-  $("c-source").textContent = "";
+function wait(ms) { return new Promise((r) => setTimeout(r, ms)); }
+
+function renderAnalyzingSteps(activeIdx) {
+  const box = $("analyzing-steps");
+  box.innerHTML = "";
+  STEPS.forEach((step, i) => {
+    const el = document.createElement("div");
+    el.className = "step" + (i === activeIdx ? " active" : i < activeIdx ? " done" : "");
+    el.innerHTML = `
+      <div class="step-icon">${i < activeIdx ? "✓" : step.icon}</div>
+      <div class="step-text"><h4>${step.title}</h4><p>${step.get(currentAnswers)}</p></div>
+    `;
+    box.appendChild(el);
+  });
 }
 
-function renderCard(card) {
+function renderResult(card, stateLabel) {
   const style = card.style || currentStyle;
   const s = STYLES[style] || STYLES.morning;
-  currentStyle = style;
-  $("c-roman").textContent = s.roman;
-  $("c-title").textContent = s.name;
-  $("c-subtitle").textContent = s.en;
-  $("c-plaque-en").textContent = "THE MCMEN ORACLE";
-  $("c-plaque-cn").textContent = s.plaque;
-  $("c-image").src = s.image;
-  $("c-text").textContent = normalizeDigits(card.text || "");
+  $("result-image").src = s.image;
+  $("result-title").textContent = s.name;
+  $("result-subtitle").textContent = stateLabel ? `为「${stateLabel}」祈福` : "祈福体";
+  $("result-poem").textContent = normalizeDigits(card.text || "");
+
   const ctx = card.context || {};
-  $("c-source").textContent = ctx.source === "mcp" ? "数据源：麦当劳 MCP 实时神谕" : "数据源：内置示例神谕";
-  $("styles").querySelectorAll(".style-chip").forEach((c) => c.classList.remove("active"));
-  const active = Array.from($("styles").children).find((c) => c.textContent.includes(s.name));
-  if (active) active.classList.add("active");
+  $("result-dish").textContent = ctx.dish || "麦门神秘单品";
+  $("result-activity").textContent = ctx.activity ? `来自活动「${ctx.activity}」` : "麦当劳 MCP 实时推荐";
+
+  // 营养胶囊
+  const pills = $("nutrition-pills");
+  pills.innerHTML = "";
+  const nutrition = [
+    { label: "热量", value: ctx.calories ? `${ctx.calories} kcal` : "--" },
+    { label: "蛋白质", value: ctx.protein ? `${ctx.protein} g` : "--" },
+    { label: "碳水化合物", value: ctx.carbohydrate ? `${ctx.carbohydrate} g` : "--" }
+  ];
+  nutrition.forEach((p) => {
+    const div = document.createElement("div");
+    div.className = "pill";
+    div.innerHTML = `<span>${p.label}</span><strong>${p.value}</strong>`;
+    pills.appendChild(div);
+  });
+
+  // 图标根据风格微调
+  const dishIcon = { morning: "☕", lunch: "🍔", afternoon: "🍟", overtime: "🍔", feast: "🥤", light: "🥗" };
+  $("dish-icon").textContent = dishIcon[style] || "🍔";
 }
 
 function normalizeDigits(s) {
   return String(s).replace(/[0-9]/g, (d) => String.fromCharCode(0xFF10 + parseInt(d, 10)));
 }
 
-$("btn-quiz-next").addEventListener("click", goNext);
-$("btn-quiz-back").addEventListener("click", goBack);
-$("btn-gen").addEventListener("click", generate);
-$("btn-skip-quiz").addEventListener("click", () => {
-  closeQuiz();
-  $("rec-summary").textContent = "已跳过问卷，可直接选择下方生活签或点击生成。";
-});
-$("btn-retake").addEventListener("click", () => {
-  answers = {};
-  currentSlide = 0;
-  document.querySelectorAll(".quiz-slide .options button").forEach((b) => b.classList.remove("selected"));
-  updateSlide();
-  openQuiz();
-});
-
-$("btn-copy").addEventListener("click", () => {
-  if (!currentCard) return toast("先生成一张牌");
-  const text = $("c-text").textContent;
-  navigator.clipboard.writeText(text).then(() => toast("文案已复制"));
-});
-
-$("btn-download").addEventListener("click", () => {
-  if (!currentCard) return toast("先生成一张牌");
-  drawCardToPNG(currentCard);
-});
-
 function wrapText(ctx, text, maxW) {
   const paragraphs = text.split("\n");
   const out = [];
   for (const para of paragraphs) {
-    const words = para.split("");
+    const chars = para.split("");
     let line = "";
-    for (const ch of words) {
+    for (const ch of chars) {
       const test = line + ch;
       if (ctx.measureText(test).width > maxW && line) {
         out.push(line);
@@ -1037,67 +1004,40 @@ function wrapText(ctx, text, maxW) {
   return out;
 }
 
-function drawCardToPNG(card) {
-  const W = 720, H = 1260;
+function drawCardToPNG() {
+  if (!currentCard) return toast("先生成一张神谕卡");
+  const card = currentCard;
+  const W = 720, H = 1280;
   const cv = document.createElement("canvas");
   cv.width = W; cv.height = H;
   const ctx = cv.getContext("2d");
   const style = card.style || currentStyle;
   const s = STYLES[style];
 
-  const bg = ctx.createRadialGradient(W * 0.35, H * 0.28, 0, W / 2, H / 2, W * 0.95);
-  bg.addColorStop(0, "#F9EFD6");
-  bg.addColorStop(0.4, "#F5E9CC");
-  bg.addColorStop(0.8, "#EAD5B0");
-  bg.addColorStop(1, "#DEC89C");
+  // 背景
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, "#1a0f12");
+  bg.addColorStop(1, "#2a1218");
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  ctx.fillStyle = "rgba(0,0,0,.02)";
-  for (let i = 0; i < 40000; i++) ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
-
-  ctx.strokeStyle = "#C9A227";
-  ctx.lineWidth = 5;
-  ctx.strokeRect(18, 18, W - 36, H - 36);
-  ctx.strokeStyle = "#8A6E1E";
+  // 外边框
+  ctx.strokeStyle = "#e6b94a";
+  ctx.lineWidth = 6;
+  ctx.strokeRect(24, 24, W - 48, H - 48);
+  ctx.strokeStyle = "rgba(230,185,74,0.35)";
   ctx.lineWidth = 2;
-  ctx.strokeRect(26, 26, W - 52, H - 52);
-  ctx.setLineDash([10, 8]);
-  ctx.strokeStyle = "rgba(138,110,30,.45)";
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(36, 36, W - 72, H - 72);
-  ctx.setLineDash([]);
-
-  const drawCorner = (x, y, rot) => {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rot * Math.PI / 180);
-    ctx.strokeStyle = "#7B1F3A";
-    ctx.fillStyle = "#7B1F3A";
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = "round";
-    ctx.beginPath(); ctx.moveTo(0, 42); ctx.lineTo(0, 10); ctx.lineTo(32, 10); ctx.stroke();
-    ctx.beginPath(); ctx.arc(9, 9, 3, 0, Math.PI * 2); ctx.fill();
-    ctx.restore();
-  };
-  drawCorner(22, 22, 0);
-  drawCorner(W - 22, 22, 90);
-  drawCorner(W - 22, H - 22, 180);
-  drawCorner(22, H - 22, 270);
+  ctx.strokeRect(34, 34, W - 68, H - 68);
 
   const cx = W / 2;
+
+  // M logo
+  ctx.fillStyle = "#ffdf80";
+  ctx.font = "bold 42px 'Times New Roman', serif";
   ctx.textAlign = "center";
+  ctx.fillText("M", cx, 95);
 
-  ctx.fillStyle = "#7B1F3A";
-  ctx.font = "38px 'Cinzel', 'Times New Roman', serif";
-  ctx.fillText(s.roman, cx, 105);
-  ctx.font = "bold 24px 'Noto Serif SC', 'Songti SC', serif";
-  ctx.fillStyle = "#2A2132";
-  ctx.fillText(s.name, cx, 145);
-  ctx.font = "14px 'Cinzel', 'Times New Roman', serif";
-  ctx.fillStyle = "#8A6E1E";
-  ctx.fillText(s.en, cx, 172);
-
+  // 图片
   const img = new Image();
   img.crossOrigin = "anonymous";
   img.onload = () => {
@@ -1109,69 +1049,131 @@ function drawCardToPNG(card) {
 
     ctx.save();
     ctx.beginPath();
-    ctx.arc(cx, 380, 150, 0, Math.PI * 2);
+    ctx.arc(cx, 340, 150, 0, Math.PI * 2);
     ctx.clip();
-    ctx.drawImage(img, sx, sy, srcSize, srcSize, cx - 150, 230, 300, 300);
+    ctx.drawImage(img, sx, sy, srcSize, srcSize, cx - 150, 190, 300, 300);
     ctx.restore();
 
-    ctx.strokeStyle = "#8A6E1E";
-    ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(cx, 380, 150, 0, Math.PI * 2); ctx.stroke();
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.arc(cx, 380, 134, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = "#e6b94a";
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(cx, 340, 150, 0, Math.PI * 2); ctx.stroke();
 
     finishPNG(ctx, card, W, H, cx, cv);
   };
-  img.onerror = () => {
-    ctx.strokeStyle = "#8A6E1E";
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(cx, 380, 150, 0, Math.PI * 2); ctx.stroke();
-    finishPNG(ctx, card, W, H, cx, cv);
-  };
+  img.onerror = () => finishPNG(ctx, card, W, H, cx, cv);
   img.src = s.image;
 }
 
 function finishPNG(ctx, card, W, H, cx, cv) {
-  ctx.fillStyle = "#2A2132";
-  ctx.font = "28px 'Noto Serif SC', 'Songti SC', serif";
+  const s = STYLES[card.style || currentStyle];
+
+  // 标题横幅
+  const bannerY = 560;
+  ctx.fillStyle = "rgba(196,30,58,0.25)";
+  ctx.fillRect(60, bannerY, W - 120, 80);
+  ctx.strokeStyle = "rgba(230,185,74,0.3)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(60, bannerY, W - 120, 80);
+  ctx.fillStyle = "#ffdf80";
+  ctx.font = "bold 38px 'Noto Serif SC', serif";
+  ctx.textAlign = "center";
+  ctx.fillText(s.name, cx, bannerY + 45);
+  ctx.fillStyle = "#e6b94a";
+  ctx.font = "20px 'Noto Serif SC', serif";
+  ctx.fillText("祈福体", cx, bannerY + 70);
+
+  // 诗句
   const text = normalizeDigits(card.text || "");
-  const lines = wrapText(ctx, text, W - 180);
-  const lineH = 50;
-  const startY = 610 + Math.max(0, (6 - lines.length) * lineH * 0.5);
-  ctx.fillStyle = "#8A6E1E";
-  ctx.font = "30px 'Cinzel', serif";
-  ctx.fillText("“", 82, startY - 15);
-  ctx.fillText("”", W - 82, startY + (lines.length - 1) * lineH + 15);
-  ctx.fillStyle = "#2A2132";
-  ctx.font = "28px 'Noto Serif SC', 'Songti SC', serif";
+  ctx.font = "28px 'Noto Serif SC', serif";
+  ctx.fillStyle = "#fff8e7";
+  const lines = wrapText(ctx, text, W - 140);
+  const lineH = 48;
+  const startY = 690 + Math.max(0, (6 - lines.length) * lineH * 0.5);
   lines.forEach((ln, i) => ctx.fillText(ln, cx, startY + i * lineH));
 
-  ctx.strokeStyle = "#8A6E1E";
-  ctx.lineWidth = 2;
-  const py = H - 140;
-  ctx.fillStyle = "rgba(201,162,39,.1)";
-  ctx.beginPath(); ctx.roundRect(52, py, W - 104, 58, 8); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = "#7B1F3A";
-  ctx.font = "13px 'Cinzel', serif";
-  ctx.fillText("THE MCMEN ORACLE", cx, py + 24);
-  ctx.fillStyle = "#8A6E1E";
-  ctx.font = "14px 'Noto Serif SC', serif";
-  const s = STYLES[card.style || currentStyle];
-  ctx.fillText(s.plaque.replace(/\s/g, "").split("").join(" "), cx, py + 46);
-
+  // 推荐单品
   const ctx2 = card.context || {};
-  ctx.fillStyle = "#8A6E1E";
-  ctx.font = "12px 'Noto Serif SC', serif";
-  ctx.fillText(ctx2.source === "mcp" ? "数据源：麦当劳 MCP 实时神谕" : "数据源：内置示例神谕", cx, H - 52);
+  const dishY = startY + lines.length * lineH + 50;
+  ctx.fillStyle = "rgba(255,248,231,0.1)";
+  ctx.strokeStyle = "rgba(230,185,74,0.3)";
+  ctx.beginPath(); ctx.roundRect(90, dishY, W - 180, 70, 35); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = "#ffdf80";
+  ctx.font = "28px 'Noto Serif SC', serif";
+  ctx.fillText(ctx2.dish || "麦门神秘单品", cx, dishY + 42);
+
+  // 营养
+  const pillY = dishY + 100;
+  const pillW = (W - 160) / 3;
+  const nutritions = [
+    { label: "热量", value: ctx2.calories ? `${ctx2.calories} kcal` : "--" },
+    { label: "蛋白质", value: ctx2.protein ? `${ctx2.protein} g` : "--" },
+    { label: "碳水", value: ctx2.carbohydrate ? `${ctx2.carbohydrate} g` : "--" }
+  ];
+  nutritions.forEach((p, i) => {
+    const x = 80 + i * (pillW + 10);
+    ctx.fillStyle = "#fff8e7";
+    ctx.beginPath(); ctx.roundRect(x, pillY, pillW, 90, 12); ctx.fill();
+    ctx.fillStyle = "#8a6e1e";
+    ctx.font = "18px 'Noto Serif SC', serif";
+    ctx.fillText(p.label, x + pillW / 2, pillY + 32);
+    ctx.fillStyle = "#9b1b3a";
+    ctx.font = "bold 24px 'Noto Serif SC', serif";
+    ctx.fillText(p.value, x + pillW / 2, pillY + 66);
+  });
+
+  // 数据源
+  ctx.fillStyle = "rgba(255,248,231,0.6)";
+  ctx.font = "16px 'Noto Serif SC', serif";
+  ctx.fillText(ctx2.source === "mcp" ? "数据源：麦当劳 MCP 实时神谕" : "数据源：内置示例神谕", cx, H - 50);
 
   const link = document.createElement("a");
   link.download = `麦门神谕_${s.name}_${Date.now()}.png`;
   link.href = cv.toDataURL("image/png");
   link.click();
-  toast("图片已下载");
+  toast("神谕卡已下载");
 }
 
-loadStyles();
+// 事件绑定
+$("btn-start").addEventListener("click", () => {
+  switchScreen("states");
+});
+
+$("btn-custom-state").addEventListener("click", () => {
+  const txt = ($("landing-input").value || "").trim();
+  if (!txt) {
+    toast("先在首页输入你的状态吧");
+    switchScreen("landing");
+    return;
+  }
+  // 简单关键词匹配
+  const map = {
+    "学习": STATES[0].answers, "考": STATES[0].answers,
+    "加班": STATES[1].answers, "工作": STATES[1].answers, "累": STATES[1].answers,
+    "放松": STATES[2].answers, "休息": STATES[2].answers, "休闲": STATES[2].answers,
+    "聚会": STATES[3].answers, "朋友": STATES[3].answers, "社交": STATES[3].answers,
+    "低落": STATES[4].answers, "难过": STATES[4].answers, "emo": STATES[4].answers,
+    "奖励": STATES[5].answers, "庆祝": STATES[5].answers, "开心": STATES[5].answers
+  };
+  let answers = STATES[5].answers;
+  for (const [k, v] of Object.entries(map)) {
+    if (txt.includes(k)) { answers = v; break; }
+  }
+  startAnalyze(answers, "自由输入");
+});
+
+$("btn-download").addEventListener("click", drawCardToPNG);
+$("btn-share").addEventListener("click", () => {
+  if (!currentCard) return toast("先生成一张神谕卡");
+  const text = $("result-poem").textContent + " —— " + $("result-dish").textContent;
+  navigator.clipboard.writeText(text).then(() => toast("文案已复制，快去分享吧"));
+});
+$("btn-restart").addEventListener("click", () => {
+  $("landing-input").value = "";
+  switchScreen("landing");
+});
+
+// 初始化
+renderStates();
 </script>
 </body>
 </html>

@@ -102,7 +102,7 @@ export class McMenuWriter {
   // 收集生成上下文：优先 MCP 实时数据；缺省项交给 generate 用 seed 兜底（保证可复现）
   // style 用于智能选品：早餐签优先咖啡/麦满分，轻食签优先低卡，其他随机
   async collectContext(style = "morning") {
-    const ctx = { mealPeriod: null, dish: null, activity: null, date: null, calories: null, protein: null, source: "fallback" };
+    const ctx = { mealPeriod: null, dish: null, activity: null, date: null, calories: null, protein: null, carbohydrate: null, fat: null, source: "fallback" };
     if (this.mcpOk) {
       try {
         const camps = await this.campaigns();
@@ -125,6 +125,8 @@ export class McMenuWriter {
           ctx.dish = chosen.productName;
           if (typeof chosen.energyKcal === "number") ctx.calories = chosen.energyKcal;
           if (typeof chosen.protein === "number") ctx.protein = chosen.protein;
+          if (typeof chosen.carbohydrate === "number") ctx.carbohydrate = chosen.carbohydrate;
+          if (typeof chosen.fat === "number") ctx.fat = chosen.fat;
         }
 
         ctx.source = "mcp";
