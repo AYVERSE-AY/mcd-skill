@@ -5,127 +5,139 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>麦门神谕 · The McMen Oracle</title>
 <style>
-  @font-face { font-family: "Cinzel"; src: local("Cinzel"), local("Cinzel-Regular"); }
+  @font-face {
+    font-family: "Cinzel";
+    src: local("Cinzel"), local("Cinzel-Regular");
+  }
   :root {
-    --navy: #080B1A;
-    --navy-light: #11163A;
-    --gold: #B7932A;
-    --gold-light: #E0C46E;
-    --gold-dim: #7A6220;
-    --parchment: #F2E6CA;
-    --parchment-dark: #DECBA6;
-    --parchment-dim: #B5A67D;
-    --crimson: #6B1A30;
-    --ink: #241B28;
-    --muted: #7A6E57;
+    --navy: #0B0F26;
+    --navy-light: #151B3D;
+    --gold: #C9A227;
+    --gold-light: #E6C96B;
+    --gold-dim: #8A6E1E;
+    --parchment: #F3E6C8;
+    --parchment-dim: #DECAA0;
+    --crimson: #7B1F3A;
+    --ink: #2A2132;
+    --muted: #8A7F68;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun", "Georgia", serif;
-    background:
-      radial-gradient(circle at 50% 35%, transparent 0%, var(--navy) 75%, #02030A 100%),
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.10'/%3E%3C/svg%3E"),
-      linear-gradient(170deg, #090D26 0%, #03050F 55%, #010108 100%);
+    background: var(--navy) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
     color: var(--parchment);
     min-height: 100vh;
     display: flex; flex-direction: column; align-items: center;
     padding: 24px 12px 40px;
     overflow-x: hidden;
   }
-  header { text-align: center; margin-bottom: 18px; position: relative; z-index: 1; }
-  .sigil { width: 64px; height: 64px; margin: 0 auto 10px; color: var(--gold); filter: drop-shadow(0 0 8px rgba(201,162,39,.25)); }
+  header { text-align: center; margin-bottom: 18px; position: relative; }
+  .sigil {
+    width: 64px; height: 64px; margin: 0 auto 10px;
+    color: var(--gold);
+  }
   h1 {
     font-family: "Cinzel", "Trajan Pro", "Times New Roman", serif;
-    font-size: 27px; letter-spacing: 4px; font-weight: 400;
+    font-size: 28px; letter-spacing: 4px; font-weight: 400;
     color: var(--gold-light); text-transform: uppercase;
-    text-shadow: 0 2px 18px rgba(201,162,39,.18);
   }
-  h1 small { display: block; font-size: 13px; letter-spacing: 9px; color: var(--parchment-dim); margin-top: 6px; font-family: "Noto Serif SC", serif; text-transform: none; }
+  h1 small {
+    display: block; font-size: 13px; letter-spacing: 8px; color: var(--parchment-dim);
+    margin-top: 6px; font-family: "Noto Serif SC", serif; text-transform: none;
+  }
   .status {
-    display: inline-block; margin-top: 12px; font-size: 11px; letter-spacing: 1.5px;
+    display: inline-block; margin-top: 12px; font-size: 12px; letter-spacing: 1px;
     padding: 5px 14px; border: 1px solid var(--gold-dim); color: var(--gold);
-    background: rgba(201,162,39,0.07);
+    background: rgba(201,162,39,0.08);
   }
-  .status.fallback { color: var(--parchment-dim); border-color: var(--muted); background: rgba(243,230,200,0.05); }
+  .status.fallback { color: var(--parchment-dim); border-color: var(--muted); background: rgba(243,230,200,0.06); }
   .styles { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 18px 0 22px; }
   .style-chip {
-    background: rgba(14,19,46,.55); border: 1px solid var(--gold-dim); color: var(--parchment-dim);
+    background: transparent; border: 1px solid var(--gold-dim); color: var(--parchment-dim);
     padding: 8px 12px; cursor: pointer; font-size: 13px; letter-spacing: 1px;
     font-family: inherit; transition: .2s; min-width: 84px;
   }
   .style-chip:hover { border-color: var(--gold); color: var(--gold-light); }
-  .style-chip.active { background: rgba(201,162,39,.14); border-color: var(--gold); color: var(--gold-light); box-shadow: 0 0 0 1px var(--gold-dim); }
+  .style-chip.active {
+    background: rgba(201,162,39,0.14); border-color: var(--gold); color: var(--gold-light);
+    box-shadow: 0 0 0 1px var(--gold-dim);
+  }
   .style-chip .num { display: block; font-family: "Cinzel", serif; font-size: 10px; color: var(--gold-dim); margin-bottom: 2px; }
   .card-wrap {
-    width: min(420px, 92vw); position: relative;
-    filter: drop-shadow(0 24px 60px rgba(0,0,0,.65));
+    width: min(420px, 92vw); position: relative; filter: drop-shadow(0 20px 50px rgba(0,0,0,.55));
   }
   .card {
     aspect-ratio: 2 / 3.5;
-    background:
-      radial-gradient(circle at 35% 28%, rgba(255,250,230,.35) 0%, transparent 45%),
-      radial-gradient(circle at 78% 72%, rgba(139,90,43,.07) 0%, transparent 32%),
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.08'/%3E%3C/svg%3E"),
-      var(--parchment);
+    background: var(--parchment) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.07'/%3E%3C/svg%3E");
     color: var(--ink);
+    border: 2px solid var(--gold);
     display: flex; flex-direction: column; align-items: center;
     padding: 5.5% 6% 5%;
     position: relative; overflow: hidden;
-    clip-path: polygon(1.5% 0.5%, 98.5% 0, 100% 1.5%, 100% 98.5%, 98% 100%, 2% 99.5%, 0 98%, 0 2%);
-    box-shadow: inset 0 0 70px rgba(80,50,30,.12);
+    box-shadow: inset 0 0 60px rgba(123,31,58,.08);
   }
-  .card::before {
-    content: "";
-    position: absolute; inset: 0; pointer-events: none; z-index: 0;
-    background: radial-gradient(circle at 50% 50%, transparent 55%, rgba(70,45,25,.18) 100%);
+  .card::before, .card::after {
+    content: ""; position: absolute; inset: 8px;
+    border: 1px solid var(--gold-dim); pointer-events: none;
   }
-  .card-border {
-    position: absolute; inset: 7px; pointer-events: none; z-index: 1;
-    fill: none; stroke: var(--gold); stroke-width: 2.2;
-    filter: drop-shadow(0 0 1px rgba(201,162,39,.35));
-  }
-  .card-inner-line {
-    position: absolute; inset: 18px; pointer-events: none; z-index: 1;
-    border: 1px dashed var(--gold-dim); opacity: .45;
+  .card::after {
+    inset: 14px; border-style: dashed; opacity: .45;
   }
   .corner {
-    position: absolute; width: 42px; height: 42px; color: var(--crimson);
-    pointer-events: none; opacity: .88; z-index: 2;
+    position: absolute; width: 38px; height: 38px; color: var(--crimson);
+    pointer-events: none; opacity: .9;
   }
-  .corner.tl { top: 10px; left: 10px; }
+  .corner.tl { top: 10px; left: 10px; transform: rotate(0); }
   .corner.tr { top: 10px; right: 10px; transform: rotate(90deg); }
-  .corner.bl { bottom: 10px; left: 10px; transform: rotate(-90deg); }
+  .corner.bl { bottom: 10px; left: 10px; transform: rotate(270deg); }
   .corner.br { bottom: 10px; right: 10px; transform: rotate(180deg); }
   .arch-frame {
-    width: 100%; aspect-ratio: 1 / 0.42;
+    width: 100%; aspect-ratio: 1 / 1.18;
+    border: 1.5px solid var(--gold-dim);
+    border-radius: 50% 50% 4px 4px / 30% 30% 4px 4px;
     display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-    padding: 12% 8% 0; position: relative; margin-bottom: 3%;
+    padding: 14% 8% 8%; position: relative; margin-bottom: 5%;
+    background: linear-gradient(180deg, rgba(201,162,39,.06) 0%, transparent 55%);
   }
-  .arch-frame svg.arch {
-    position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
-    fill: none; stroke: var(--gold-dim); stroke-width: 1.5;
+  .arch-frame::before {
+    content: ""; position: absolute; inset: 5px; border: 1px solid var(--gold-dim);
+    border-radius: 50% 50% 4px 4px / 30% 30% 4px 4px; opacity: .5;
   }
-  .arch-frame svg.arch path { stroke-linecap: round; }
-  .card-top { text-align: center; width: 100%; margin-bottom: 8%; position: relative; z-index: 2; }
-  .card-roman { font-family: "Cinzel", serif; font-size: 13px; letter-spacing: 2px; color: var(--crimson); margin-bottom: 4px; }
-  .card-title { font-size: 15px; letter-spacing: 3px; color: var(--crimson); font-weight: 700; }
-  .card-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; position: relative; z-index: 2; }
-  .sun { width: 58px; height: 58px; color: var(--gold); margin-bottom: 8%; filter: drop-shadow(0 0 6px rgba(201,162,39,.25)); }
+  .card-top {
+    text-align: center; width: 100%; margin-bottom: 8%;
+  }
+  .card-roman {
+    font-family: "Cinzel", serif; font-size: 13px; letter-spacing: 2px; color: var(--crimson);
+    margin-bottom: 4px;
+  }
+  .card-title {
+    font-size: 15px; letter-spacing: 3px; color: var(--crimson);
+    font-weight: 700;
+  }
+  .card-center {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 100%; text-align: center;
+  }
+  .sun {
+    width: 56px; height: 56px; color: var(--gold); margin-bottom: 8%;
+  }
   .card-text {
     font-size: clamp(15px, 4.4vw, 19px); line-height: 2; letter-spacing: 1px;
-    white-space: pre-line; width: 100%; color: var(--ink);
-    text-shadow: 0 0 1px rgba(36,27,40,.06);
+    white-space: pre-line; width: 100%;
   }
-  .card-bottom { width: 100%; text-align: center; margin-top: auto; padding-top: 6%; border-top: 1px solid var(--parchment-dim); position: relative; z-index: 2; }
-  .card-source { font-size: 11px; letter-spacing: 1px; color: var(--muted); margin-bottom: 4px; }
-  .card-meta { font-size: 10px; letter-spacing: .5px; color: var(--muted); line-height: 1.7; }
-  .stain {
-    position: absolute; border-radius: 50%; pointer-events: none; z-index: 0;
-    background: radial-gradient(circle, rgba(139,90,43,.11) 0%, transparent 72%);
+  .card-bottom {
+    width: 100%; text-align: center; margin-top: auto; padding-top: 6%;
+    border-top: 1px solid var(--parchment-dim);
+  }
+  .card-source {
+    font-size: 11px; letter-spacing: 1px; color: var(--muted); margin-bottom: 4px;
+  }
+  .card-meta {
+    font-size: 10px; letter-spacing: .5px; color: var(--muted); line-height: 1.7;
   }
   .actions { display: flex; gap: 12px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
   button.action {
-    border: 1px solid var(--gold-dim); background: rgba(14,19,46,.55); color: var(--gold);
+    border: 1px solid var(--gold-dim); background: transparent; color: var(--gold);
     padding: 11px 22px; font-size: 14px; letter-spacing: 1px; cursor: pointer;
     font-family: inherit; transition: .2s;
   }
@@ -160,19 +172,10 @@
 
 <div class="card-wrap">
   <div class="card" id="card">
-    <svg class="card-border" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <path d="M1.5,4 Q1.5,1.5 4,1.5 L96,1.5 Q98.5,1.5 98.5,4 L98.5,96 Q98.5,98.5 96,98.5 L4,98.5 Q1.5,98.5 1.5,96 Z" vector-effect="non-scaling-stroke"/>
-    </svg>
-    <div class="card-inner-line"></div>
-
-    <div class="stain" style="width:110px;height:90px;top:12%;left:8%;transform:rotate(25deg)"></div>
-    <div class="stain" style="width:80px;height:70px;bottom:18%;right:10%;transform:rotate(-15deg)"></div>
-    <div class="stain" style="width:50px;height:50px;top:45%;right:6%;transform:rotate(40deg)"></div>
-
-    <svg class="corner tl" viewBox="0 0 44 44"><path d="M4 40V8a4 4 0 0 1 4-4h32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M9 35V12a2 2 0 0 1 2-2h20" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><circle cx="9" cy="9" r="2.5" fill="currentColor"/></svg>
-    <svg class="corner tr" viewBox="0 0 44 44"><path d="M4 40V8a4 4 0 0 1 4-4h32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M9 35V12a2 2 0 0 1 2-2h20" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><circle cx="9" cy="9" r="2.5" fill="currentColor"/></svg>
-    <svg class="corner bl" viewBox="0 0 44 44"><path d="M4 40V8a4 4 0 0 1 4-4h32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M9 35V12a2 2 0 0 1 2-2h20" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><circle cx="9" cy="9" r="2.5" fill="currentColor"/></svg>
-    <svg class="corner br" viewBox="0 0 44 44"><path d="M4 40V8a4 4 0 0 1 4-4h32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M9 35V12a2 2 0 0 1 2-2h20" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><circle cx="9" cy="9" r="2.5" fill="currentColor"/></svg>
+    <svg class="corner tl" viewBox="0 0 40 40"><path d="M4 36V8a4 4 0 0 1 4-4h28" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 32V12a2 2 0 0 1 2-2h18" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
+    <svg class="corner tr" viewBox="0 0 40 40"><path d="M4 36V8a4 4 0 0 1 4-4h28" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 32V12a2 2 0 0 1 2-2h18" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
+    <svg class="corner bl" viewBox="0 0 40 40"><path d="M4 36V8a4 4 0 0 1 4-4h28" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 32V12a2 2 0 0 1 2-2h18" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
+    <svg class="corner br" viewBox="0 0 40 40"><path d="M4 36V8a4 4 0 0 1 4-4h28" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 32V12a2 2 0 0 1 2-2h18" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
 
     <div class="card-top">
       <div class="card-roman" id="c-roman">I</div>
@@ -180,14 +183,10 @@
     </div>
 
     <div class="arch-frame">
-      <svg class="arch" viewBox="0 0 300 120" preserveAspectRatio="none">
-        <path d="M10,110 L10,100 C10,45 75,8 150,8 C225,8 290,45 290,100 L290,110" vector-effect="non-scaling-stroke" opacity="0.7"/>
-        <path d="M20,110 L20,102 C20,58 78,22 150,22 C222,22 280,58 280,102 L280,110" opacity="0.35" vector-effect="non-scaling-stroke"/>
-      </svg>
       <div class="card-center">
         <svg class="sun" viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="1.2">
-          <circle cx="30" cy="30" r="10" fill="currentColor" fill-opacity=".12"/>
-          <path d="M30 5v9M30 46v9M5 30h9M46 30h9M13.6 13.6l6.4 6.4M40 40l6.4 6.4M13.6 46.4l6.4-6.4M40 20l6.4-6.4"/>
+          <circle cx="30" cy="30" r="10" fill="currentColor" fill-opacity=".15"/>
+          <path d="M30 6v8M30 46v8M6 30h8M46 30h8M14.1 14.1l5.7 5.7M40.2 40.2l5.7 5.7M14.1 45.9l5.7-5.7M40.2 19.8l5.7-5.7"/>
           <circle cx="30" cy="30" r="4" fill="currentColor"/>
         </svg>
         <div class="card-text" id="c-text">点击「抽牌」开始</div>
@@ -273,6 +272,7 @@ function renderCard(card) {
   currentCard = card;
   $("c-roman").textContent = STYLE_ROMAN[card.style] || "I";
   $("c-title").textContent = STYLE_NAMES[card.style] || card.style;
+  $("c-title").dataset.en = STYLE_TITLES[card.style] || "THE ORACLE";
   $("c-text").textContent = card.text;
   const ctx = card.context || {};
   const src = ctx.source === "mcp" ? "麦当劳 MCP 实时神谕" : "内置示例神谕";
@@ -325,179 +325,89 @@ function wrapText(ctx, text, maxWidth) {
   return lines;
 }
 
-function wobblePath(w, h, amp) {
-  let d = `M${amp + r(amp)},${amp + r(amp)} `;
-  const step = 24;
-  for (let x = step; x <= w - step; x += step) d += `L${x + r(amp)},${amp + r(amp)} `;
-  d += `L${w - amp + r(amp)},${amp + r(amp)} `;
-  for (let y = step; y <= h - step; y += step) d += `L${w - amp + r(amp)},${y + r(amp)} `;
-  d += `L${w - amp + r(amp)},${h - amp + r(amp)} `;
-  for (let x = w - step; x >= step; x -= step) d += `L${x + r(amp)},${h - amp + r(amp)} `;
-  d += `L${amp + r(amp)},${h - amp + r(amp)} `;
-  for (let y = h - step; y >= step; y -= step) d += `L${amp + r(amp)},${y + r(amp)} `;
-  d += "Z";
-  return d;
-  function r(a) { return (Math.random() - 0.5) * a; }
-}
-
-function randomBlob(ctx, x, y, r, color) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.scale(1, 0.75 + Math.random() * 0.4);
-  ctx.beginPath();
-  for (let i = 0; i <= 10; i++) {
-    const a = (i / 10) * Math.PI * 2;
-    const rr = r * (0.75 + Math.random() * 0.45);
-    const px = Math.cos(a) * rr, py = Math.sin(a) * rr;
-    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-  }
-  ctx.closePath();
-  ctx.fillStyle = color;
-  ctx.filter = "blur(14px)";
-  ctx.fill();
-  ctx.restore();
-}
-
-function fiberTexture(ctx, w, h) {
-  ctx.save();
-  ctx.strokeStyle = "rgba(90,65,38,0.035)";
-  ctx.lineWidth = 0.5;
-  for (let i = 0; i < 160; i++) {
-    const x = Math.random() * w, y = Math.random() * h;
-    const len = 12 + Math.random() * 24;
-    const ang = Math.random() * Math.PI;
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.quadraticCurveTo(x + Math.cos(ang + 0.2) * len * 0.5, y + Math.sin(ang + 0.2) * len * 0.5, x + Math.cos(ang) * len, y + Math.sin(ang) * len);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-function inkSplatter(ctx, w, h) {
-  ctx.save();
-  for (let i = 0; i < 22; i++) {
-    const x = Math.random() * w, y = Math.random() * h;
-    const r = 1 + Math.random() * 2.2;
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(36,27,40,${0.04 + Math.random() * 0.07})`;
-    ctx.fill();
-  }
-  ctx.restore();
-}
-
-function vignette(ctx, w, h) {
-  const g = ctx.createRadialGradient(w / 2, h / 2, w * 0.4, w / 2, h / 2, w * 0.85);
-  g.addColorStop(0, "rgba(60,42,28,0)");
-  g.addColorStop(1, "rgba(60,42,28,.22)");
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, w, h);
-}
-
 function drawCard(card) {
   const W = 720, H = 1260;
   const cv = document.createElement("canvas");
   cv.width = W; cv.height = H;
   const ctx = cv.getContext("2d");
 
-  // warmer parchment base
-  const bg = ctx.createRadialGradient(W * 0.35, H * 0.28, 0, W / 2, H / 2, W * 0.95);
-  bg.addColorStop(0, "#F8ECD0");
-  bg.addColorStop(0.4, "#F2E6CA");
-  bg.addColorStop(0.8, "#E6D5B0");
-  bg.addColorStop(1, "#D9C69C");
-  ctx.fillStyle = bg;
+  // parchment background with noise
+  ctx.fillStyle = "#F3E6C8";
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = "rgba(0,0,0,.04)";
+  for (let i = 0; i < 40000; i++) {
+    ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
+  }
+  ctx.fillStyle = "rgba(123,31,58,.03)";
   ctx.fillRect(0, 0, W, H);
 
-  // subtle stains
-  randomBlob(ctx, W * 0.18, H * 0.16, 65, "rgba(139,90,43,0.09)");
-  randomBlob(ctx, W * 0.82, H * 0.76, 52, "rgba(139,90,43,0.07)");
-  randomBlob(ctx, W * 0.10, H * 0.58, 38, "rgba(150,100,50,0.05)");
-
-  fiberTexture(ctx, W, H);
-  inkSplatter(ctx, W, H);
-
-  // fine grain
-  ctx.fillStyle = "rgba(0,0,0,.022)";
-  for (let i = 0; i < 45000; i++) ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
-
-  // wobbly borders
-  ctx.strokeStyle = "#B7932A";
-  ctx.lineWidth = 3.2;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.stroke(new Path2D(wobblePath(W, H, 26)));
-
-  ctx.strokeStyle = "#7A6220";
-  ctx.lineWidth = 1.1;
-  ctx.stroke(new Path2D(wobblePath(W, H, 34)));
-
-  ctx.setLineDash([7, 6]);
-  ctx.strokeStyle = "rgba(122,98,32,.48)";
+  // border
+  ctx.strokeStyle = "#C9A227";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(18, 18, W - 36, H - 36);
+  ctx.strokeStyle = "#8A6E1E";
   ctx.lineWidth = 1;
-  ctx.stroke(new Path2D(wobblePath(W, H, 48)));
+  ctx.strokeRect(28, 28, W - 56, H - 56);
+  ctx.setLineDash([5, 5]);
+  ctx.strokeRect(38, 38, W - 76, H - 76);
   ctx.setLineDash([]);
-
-  // border grime
-  ctx.save();
-  ctx.strokeStyle = "rgba(80,55,30,.12)";
-  ctx.lineWidth = 8;
-  ctx.filter = "blur(6px)";
-  ctx.stroke(new Path2D(wobblePath(W, H, 30)));
-  ctx.restore();
 
   // corners
   const drawCorner = (x, y, rot) => {
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(rot * Math.PI / 180);
-    ctx.strokeStyle = "#6B1A30";
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = "round";
-    ctx.beginPath(); ctx.moveTo(0, 34); ctx.lineTo(0, 8); ctx.lineTo(26, 8); ctx.stroke();
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(7, 29); ctx.lineTo(7, 14); ctx.lineTo(20, 14); ctx.stroke();
-    ctx.fillStyle = "#6B1A30";
+    ctx.strokeStyle = "#7B1F3A";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, 30); ctx.lineTo(0, 8); ctx.lineTo(22, 8);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(6, 26); ctx.lineTo(6, 14); ctx.lineTo(16, 14);
+    ctx.stroke();
+    ctx.fillStyle = "#7B1F3A";
     ctx.beginPath(); ctx.arc(8, 8, 3, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   };
-  drawCorner(24, 24, 0);
-  drawCorner(W - 24, 24, 90);
-  drawCorner(W - 24, H - 24, 180);
-  drawCorner(24, H - 24, 270);
+  drawCorner(22, 22, 0);
+  drawCorner(W - 22, 22, 90);
+  drawCorner(W - 22, H - 22, 180);
+  drawCorner(22, H - 22, 270);
 
   const cx = W / 2;
   ctx.textAlign = "center";
 
-  ctx.fillStyle = "#6B1A30";
+  // roman + style
+  ctx.fillStyle = "#7B1F3A";
   ctx.font = "22px 'Cinzel', 'Times New Roman', serif";
-  ctx.fillText(STYLE_ROMAN[card.style] || "I", cx, 95);
-  ctx.font = "bold 25px 'Noto Serif SC', 'Songti SC', serif";
-  ctx.fillText(STYLE_NAMES[card.style] || card.style, cx, 135);
+  ctx.fillText(STYLE_ROMAN[card.style] || "I", cx, 90);
+  ctx.font = "bold 24px 'Noto Serif SC', 'Songti SC', serif";
+  ctx.fillText(STYLE_NAMES[card.style] || card.style, cx, 128);
 
-  // decorative top arch only
-  ctx.strokeStyle = "rgba(122,98,32,.55)";
-  ctx.lineWidth = 1.6;
-  const ax = 84, aw = W - 168;
+  // arch frame
+  ctx.strokeStyle = "#8A6E1E";
+  ctx.lineWidth = 2;
+  const ax = 80, ay = 170, aw = W - 160, ah = 720;
   ctx.beginPath();
-  ctx.moveTo(ax, 210);
-  ctx.bezierCurveTo(ax, 135, cx - aw / 2 + 25, 95, cx, 95);
-  ctx.bezierCurveTo(cx + aw / 2 - 25, 95, ax + aw, 135, ax + aw, 210);
+  ctx.ellipse(cx, ay + ah * 0.22, aw / 2, ah * 0.22, 0, Math.PI, 0);
+  ctx.lineTo(ax + aw, ay + ah);
+  ctx.lineTo(ax, ay + ah);
+  ctx.closePath();
   ctx.stroke();
-  ctx.strokeStyle = "rgba(122,98,32,.28)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(ax + 14, 210);
-  ctx.bezierCurveTo(ax + 14, 150, cx - aw / 2 + 38, 112, cx, 112);
-  ctx.bezierCurveTo(cx + aw / 2 - 38, 112, ax + aw - 14, 150, ax + aw - 14, 210);
+  ctx.ellipse(cx, ay + ah * 0.22, aw / 2 - 12, ah * 0.22 - 10, 0, Math.PI, 0);
+  ctx.lineTo(ax + aw - 12, ay + ah - 8);
+  ctx.lineTo(ax + 12, ay + ah - 8);
+  ctx.closePath();
   ctx.stroke();
 
   // sun symbol
-  ctx.strokeStyle = "#B7932A";
-  ctx.fillStyle = "rgba(183,147,42,.10)";
+  ctx.strokeStyle = "#C9A227";
+  ctx.fillStyle = "rgba(201,162,39,.15)";
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.arc(cx, 330, 36, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = "#B7932A";
+  ctx.fillStyle = "#C9A227";
   ctx.beginPath(); ctx.arc(cx, 330, 10, 0, Math.PI * 2); ctx.fill();
   for (let i = 0; i < 8; i++) {
     const a = i * Math.PI / 4;
@@ -508,10 +418,10 @@ function drawCard(card) {
   }
 
   // main text
-  ctx.fillStyle = "#241B28";
+  ctx.fillStyle = "#2A2132";
   ctx.font = "30px 'Noto Serif SC', 'Songti SC', serif";
   const text = normalizeDigits(card.text);
-  const lines = wrapText(ctx, text, aw - 75);
+  const lines = wrapText(ctx, text, aw - 70);
   const lineH = 52;
   const startY = 560 + Math.max(0, (5 - lines.length) * lineH * 0.5);
   lines.forEach((ln, i) => ctx.fillText(ln, cx, startY + i * lineH));
@@ -519,25 +429,23 @@ function drawCard(card) {
   // bottom
   const ctxInfo = card.context || {};
   const src = ctxInfo.source === "mcp" ? "麦当劳 MCP 实时神谕" : "内置示例神谕";
-  ctx.strokeStyle = "#B5A67D";
+  ctx.strokeStyle = "#DECAA0";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(ax + 30, H - 250);
-  ctx.lineTo(ax + aw - 30, H - 250);
+  ctx.moveTo(ax + 30, H - 240);
+  ctx.lineTo(ax + aw - 30, H - 240);
   ctx.stroke();
 
-  ctx.fillStyle = "#7A6E57";
+  ctx.fillStyle = "#8A7F68";
   ctx.font = "18px 'Noto Serif SC', 'Songti SC', serif";
-  ctx.fillText("数据源：" + src, cx, H - 205);
+  ctx.fillText("数据源：" + src, cx, H - 195);
   ctx.font = "16px 'Noto Serif SC', 'Songti SC', serif";
-  ctx.fillText("圣餐：" + (ctxInfo.dish || "—") + "  ｜  启示：" + (ctxInfo.activity || "—"), cx, H - 165);
-  ctx.fillStyle = "#7A6220";
+  ctx.fillText("圣餐：" + (ctxInfo.dish || "—") + "  ｜  启示：" + (ctxInfo.activity || "—"), cx, H - 155);
+  ctx.fillStyle = "#8A6E1E";
   ctx.font = "16px 'Cinzel', 'Times New Roman', serif";
-  ctx.fillText("THE MCMEN ORACLE", cx, H - 95);
+  ctx.fillText("THE MCMEN ORACLE", cx, H - 88);
   ctx.font = "13px 'Noto Serif SC', serif";
-  ctx.fillText("麦门文学生成器 · mcd-skill", cx, H - 68);
-
-  vignette(ctx, W, H);
+  ctx.fillText("麦门文学生成器 · mcd-skill", cx, H - 62);
 
   return cv.toDataURL("image/png");
 }
