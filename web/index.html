@@ -306,6 +306,8 @@ main {
   justify-content: center;
   position: relative;
   z-index: 1;
+  overflow: hidden;
+  background: rgba(201,162,39,.06);
 }
 
 .symbol-frame::before {
@@ -314,12 +316,15 @@ main {
   inset: 10px;
   border: 1px dashed rgba(138,110,30,.5);
   border-radius: 50%;
+  z-index: 1;
+  pointer-events: none;
 }
 
-.symbol-frame svg {
-  width: 140px;
-  height: 140px;
-  color: var(--gold-dark);
+.symbol-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .card-text {
@@ -734,7 +739,7 @@ main {
       <div class="style-en" id="c-subtitle">THE MORNING AWAKENING</div>
 
       <div class="symbol-frame">
-        <svg id="c-symbol" viewBox="0 0 120 120"></svg>
+        <img id="c-image" src="" alt="神谕卡面">
       </div>
 
       <div class="card-text">
@@ -763,54 +768,12 @@ main {
 
 <script>
 const STYLES = {
-  morning: { name: "早八续命签", en: "THE MORNING AWAKENING", plaque: "晨 起 神 谕", roman: "I", visual: "modern" },
-  lunch:   { name: "中午干饭签", en: "THE LUNCH DECREE",      plaque: "干 饭 神 谕", roman: "II", visual: "fantasy" },
-  afternoon:{ name: "下午茶摸鱼签", en: "THE AFTERNOON SNEAK", plaque: "摸 鱼 神 谕", roman: "III", visual: "classic" },
-  overtime:{ name: "加班回血签", en: "THE NIGHT SHIFT CURE",  plaque: "回 血 神 谕", roman: "IV", visual: "modern" },
-  feast:   { name: "周末欢聚签", en: "THE WEEKEND FEAST",     plaque: "欢 聚 神 谕", roman: "V", visual: "fantasy" },
-  light:   { name: "自律轻食签", en: "THE LIGHT CHOICE",      plaque: "轻 食 神 谕", roman: "VI", visual: "classic" }
-};
-
-const SYMBOLS = {
-  morning: `<circle cx="60" cy="60" r="48" stroke-dasharray="4 4" opacity=".5"/>
-<path d="M60 20v16M60 84v16M20 60h16M84 60h16" stroke-width="2"/>
-<circle cx="60" cy="60" r="22" fill="rgba(201,162,39,.12)"/>
-<path d="M60 42v36M46 58h28" stroke-width="2"/>
-<path d="M42 48a6 6 0 0 1 6-6h24a6 6 0 0 1 6 6v20a6 6 0 0 1-6 6H48a6 6 0 0 1-6-6V48z" fill="rgba(201,162,39,.1)" stroke-width="1.5"/>
-<circle cx="60" cy="40" r="4" fill="currentColor" opacity=".6"/>
-<path d="M48 88c6-4 12-6 12-6s6 2 12 6" fill="none" opacity=".6"/>`,
-  lunch: `<circle cx="60" cy="60" r="48" stroke-dasharray="2 3" opacity=".5"/>
-<path d="M60 20l8 14h16l-12 10 5 16-17-11-17 11 5-16-12-10h16z" fill="rgba(201,162,39,.18)"/>
-<path d="M36 72c0-14 10.8-24 24-24s24 10 24 24v18H36V72z" fill="rgba(123,31,58,.08)"/>
-<circle cx="60" cy="58" r="6" fill="currentColor" opacity=".5"/>
-<path d="M45 86h30M50 78h20" stroke-width="2"/>`,
-  afternoon: `<circle cx="60" cy="60" r="48" opacity=".45"/>
-<circle cx="60" cy="45" r="14" fill="rgba(201,162,39,.1)"/>
-<path d="M60 100c-18-8-28-20-28-36 0-10 6-18 14-22M60 100c18-8 28-20 28-36 0-10-6-18-14-22" fill="none"/>
-<path d="M38 84c8 4 14 6 22 6s14-2 22-6" fill="none"/>
-<path d="M35 50c-4-2-6-6-6-10M85 50c4-2 6-6 6-10" fill="none"/>
-<circle cx="54" cy="42" r="2" fill="currentColor"/>
-<circle cx="66" cy="42" r="2" fill="currentColor"/>`,
-  overtime: `<circle cx="60" cy="60" r="48" stroke-dasharray="3 5" opacity=".5"/>
-<rect x="44" y="36" width="32" height="28" rx="4" fill="rgba(201,162,39,.1)"/>
-<path d="M48 40h24M48 48h20M48 56h16" stroke-width="2"/>
-<path d="M60 64v20M52 80h16" stroke-width="2.5"/>
-<circle cx="60" cy="50" r="5" fill="rgba(123,31,58,.2)"/>
-<path d="M32 74c10-4 20-6 28-6s18 2 28 6" fill="none"/>`,
-  feast: `<circle cx="60" cy="60" r="48" opacity=".45"/>
-<path d="M42 50h36M42 58h36M42 66h36" stroke-width="2"/>
-<path d="M60 30c-8 0-14 6-14 14v12h28V44c0-8-6-14-14-14z" fill="rgba(201,162,39,.15)"/>
-<path d="M40 78c8 6 16 10 20 10s12-4 20-10" fill="none"/>
-<circle cx="38" cy="54" r="3" fill="currentColor"/>
-<circle cx="82" cy="54" r="3" fill="currentColor"/>
-<path d="M48 36c4-4 8-6 12-6s8 2 12 6" fill="none"/>`,
-  light: `<circle cx="60" cy="60" r="48" stroke-dasharray="4 4" opacity=".5"/>
-<path d="M60 25c-12 0-22 10-22 22 0 12 22 36 22 36s22-24 22-36c0-12-10-22-22-22z" fill="rgba(201,162,39,.1)"/>
-<path d="M60 36c-8 0-14 6-14 14 0 8 14 24 14 24s14-16 14-24c0-8-6-14-14-14z" fill="rgba(123,31,58,.06)"/>
-<path d="M60 92v16M52 104h16" stroke-width="2"/>
-<path d="M38 62c6-4 12-6 22-6s16 2 22 6" fill="none"/>
-<circle cx="60" cy="54" r="4" fill="currentColor" opacity=".5"/>
-<path d="M35 45c4-5 10-9 16-9M85 45c-4-5-10-9-16-9" fill="none"/>`
+  morning: { name: "早八续命签", en: "THE MORNING AWAKENING", plaque: "晨 起 神 谕", roman: "I", visual: "modern", image: "assets/cards/card-1.png" },
+  lunch:   { name: "中午干饭签", en: "THE LUNCH DECREE",      plaque: "干 饭 神 谕", roman: "II", visual: "fantasy", image: "assets/cards/card-2.png" },
+  afternoon:{ name: "下午茶摸鱼签", en: "THE AFTERNOON SNEAK", plaque: "摸 鱼 神 谕", roman: "III", visual: "classic", image: "assets/cards/card-3.png" },
+  overtime:{ name: "加班回血签", en: "THE NIGHT SHIFT CURE",  plaque: "回 血 神 谕", roman: "IV", visual: "modern", image: "assets/cards/card-4.png" },
+  feast:   { name: "周末欢聚签", en: "THE WEEKEND FEAST",     plaque: "欢 聚 神 谕", roman: "V", visual: "fantasy", image: "assets/cards/card-5.png" },
+  light:   { name: "自律轻食签", en: "THE LIGHT CHOICE",      plaque: "轻 食 神 谕", roman: "VI", visual: "classic", image: "assets/cards/card-6.png" }
 };
 
 let currentStyle = "morning";
@@ -1001,7 +964,7 @@ function renderEmptyCard() {
   $("c-subtitle").textContent = s.en;
   $("c-plaque-en").textContent = "THE MCMEN ORACLE";
   $("c-plaque-cn").textContent = s.plaque;
-  $("c-symbol").innerHTML = SYMBOLS[currentStyle] || SYMBOLS.morning;
+  $("c-image").src = s.image;
   $("c-text").textContent = "点击下方按钮，抽取今日麦门神谕…";
   $("c-source").textContent = "";
 }
@@ -1015,7 +978,7 @@ function renderCard(card) {
   $("c-subtitle").textContent = s.en;
   $("c-plaque-en").textContent = "THE MCMEN ORACLE";
   $("c-plaque-cn").textContent = s.plaque;
-  $("c-symbol").innerHTML = SYMBOLS[style] || SYMBOLS.morning;
+  $("c-image").src = s.image;
   $("c-text").textContent = normalizeDigits(card.text || "");
   const ctx = card.context || {};
   $("c-source").textContent = ctx.source === "mcp" ? "数据源：麦当劳 MCP 实时神谕" : "数据源：内置示例神谕";
@@ -1135,22 +1098,37 @@ function drawCardToPNG(card) {
   ctx.fillStyle = "#8A6E1E";
   ctx.fillText(s.en, cx, 172);
 
-  ctx.strokeStyle = "#8A6E1E";
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.arc(cx, 380, 150, 0, Math.PI * 2); ctx.stroke();
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.arc(cx, 380, 134, 0, Math.PI * 2); ctx.stroke();
-
-  const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 120 120" color="#8A6E1E">${SYMBOLS[style]}</svg>`;
   const img = new Image();
-  const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
+  img.crossOrigin = "anonymous";
   img.onload = () => {
-    ctx.drawImage(img, cx - 70, 310, 140, 140);
-    URL.revokeObjectURL(url);
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
+    const srcSize = Math.min(iw, ih);
+    const sx = (iw - srcSize) / 2;
+    const sy = (ih - srcSize) / 2;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, 380, 150, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.drawImage(img, sx, sy, srcSize, srcSize, cx - 150, 230, 300, 300);
+    ctx.restore();
+
+    ctx.strokeStyle = "#8A6E1E";
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(cx, 380, 150, 0, Math.PI * 2); ctx.stroke();
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(cx, 380, 134, 0, Math.PI * 2); ctx.stroke();
+
     finishPNG(ctx, card, W, H, cx, cv);
   };
-  img.src = url;
+  img.onerror = () => {
+    ctx.strokeStyle = "#8A6E1E";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(cx, 380, 150, 0, Math.PI * 2); ctx.stroke();
+    finishPNG(ctx, card, W, H, cx, cv);
+  };
+  img.src = s.image;
 }
 
 function finishPNG(ctx, card, W, H, cx, cv) {
