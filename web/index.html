@@ -411,18 +411,149 @@ main {
   transition: all .3s;
 }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* 问卷浮层 */
+.quiz-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(13,15,28,.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .5s ease;
+}
+.quiz-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.quiz-modal {
+  width: min(520px, 90vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 36px 32px 32px;
+  border-radius: 24px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(201,162,39,.25);
+  box-shadow: 0 24px 80px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.08);
+  transform: translateY(24px) scale(.96);
+  transition: transform .5s cubic-bezier(.2,.8,.2,1), opacity .4s ease;
+  opacity: 0;
+}
+.quiz-overlay.show .quiz-modal {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.quiz-modal h2 {
+  font-family: "Cinzel", serif;
+  font-size: 1.5rem;
+  color: var(--gold);
+  margin: 0 0 8px;
+  text-align: center;
+  letter-spacing: 3px;
+}
+
+.quiz-modal .quiz-sub {
+  text-align: center;
+  font-size: .9rem;
+  opacity: .75;
+  margin-bottom: 28px;
+}
+
+.quiz-modal .question {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.quiz-modal .question:last-of-type {
+  border-bottom: none;
+}
+
+.quiz-modal .question label {
+  font-size: .95rem;
+  margin-bottom: 12px;
+  color: var(--parchment);
+}
+
+.quiz-modal .options button {
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.18);
+}
+.quiz-modal .options button:hover, .quiz-modal .options button.selected {
+  background: rgba(201,162,39,.2);
+  border-color: var(--gold);
+}
+
+.quiz-modal .actions {
+  margin-top: 8px;
+}
+
+.quiz-modal .skip {
+  text-align: center;
+  margin-top: 16px;
+  font-size: .82rem;
+  opacity: .55;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.quiz-modal .skip:hover { opacity: .9; text-decoration: underline; }
+
+.recommend-toast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  z-index: 90;
+  padding: 14px 24px;
+  border-radius: 30px;
+  background: rgba(26,28,46,.92);
+  border: 1px solid rgba(201,162,39,.35);
+  box-shadow: 0 10px 40px rgba(0,0,0,.35);
+  color: var(--parchment);
+  font-size: .92rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: all .4s cubic-bezier(.2,.8,.2,1);
+  text-align: center;
+  max-width: min(560px, 92vw);
+}
+.recommend-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.recommend-toast strong {
+  color: var(--gold);
+}
+
+.panel .section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.panel .section-title button {
+  font-size: .75rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: transparent;
+  border: 1px solid rgba(201,162,39,.35);
+  color: var(--gold);
+  cursor: pointer;
+}
 </style>
 </head>
 <body>
-<header>
-  <h1>麦 门 神 谕</h1>
-  <p>每日麦门决策助手 · 抽一张生活签，决定今天吃什么</p>
-  <span id="status">连接中…</span>
-</header>
 
-<main>
-  <section class="panel">
-    <h2>先描述你的状态</h2>
+<!-- 问卷浮层 -->
+<div class="quiz-overlay show" id="quiz-overlay">
+  <div class="quiz-modal">
+    <h2>今日麦门神谕</h2>
+    <p class="quiz-sub">回答 4 个小问题，为你推荐一张生活签</p>
 
     <div class="question" data-q="time">
       <label>1. 现在是什么时间？</label>
@@ -470,18 +601,28 @@ main {
 
     <div class="actions">
       <button class="primary" id="btn-recommend">获取推荐</button>
-      <button class="secondary" id="btn-reset">重置</button>
+      <button class="secondary" id="btn-skip-quiz">跳过问卷</button>
     </div>
+  </div>
+</div>
 
-    <div class="recommendation" id="recommendation">
-      <h3>🎯 推荐抽取：<span id="rec-style">-</span></h3>
-      <p id="rec-reason"></p>
-      <div class="actions" style="margin-top:14px;">
-        <button class="primary" id="btn-draw-rec">抽取这张牌</button>
-      </div>
+<div class="recommend-toast" id="recommend-toast"></div>
+
+<header>
+  <h1>麦 门 神 谕</h1>
+  <p>每日麦门决策助手 · 抽一张生活签，决定今天吃什么</p>
+  <span id="status">连接中…</span>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="section-title">
+      <h2 style="margin:0">推荐结果</h2>
+      <button id="btn-retake">重新测评</button>
     </div>
+    <p id="rec-summary" style="margin-top:12px;font-size:.9rem;opacity:.85;">完成左侧问卷后，会为你推荐最适合今日的生活签。</p>
 
-    <h2 style="margin-top:28px;">或直接选择</h2>
+    <h2 style="margin-top:22px;">或直接选择</h2>
     <div class="style-row" id="styles"></div>
   </section>
 
@@ -642,6 +783,21 @@ async function loadStyles() {
   }
 }
 
+function closeQuiz() {
+  $("quiz-overlay").classList.remove("show");
+}
+
+function openQuiz() {
+  $("quiz-overlay").classList.add("show");
+}
+
+function showRecommendToast(name, reason) {
+  const el = $("recommend-toast");
+  el.innerHTML = `为你推荐 <strong>${name}</strong> · ${reason}`;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 6000);
+}
+
 async function recommend() {
   const btn = $("btn-recommend");
   btn.disabled = true;
@@ -652,12 +808,21 @@ async function recommend() {
       body: JSON.stringify(answers)
     });
     currentStyle = data.style;
-    $("rec-style").textContent = STYLES[data.style].name;
-    $("rec-reason").textContent = data.reason;
-    $("recommendation").classList.add("show");
+    const s = STYLES[data.style];
+
+    // 更新左侧推荐摘要
+    $("rec-summary").innerHTML = `推荐抽取 <strong style="color:var(--gold)">${s.name}</strong>。<br>${data.reason}`;
+
+    // 高亮风格按钮
     $("styles").querySelectorAll(".style-chip").forEach((c) => c.classList.remove("active"));
-    const active = Array.from($("styles").children).find((c) => c.textContent.includes(STYLES[data.style].name));
+    const active = Array.from($("styles").children).find((c) => c.textContent.includes(s.name));
     if (active) active.classList.add("active");
+
+    closeQuiz();
+    showRecommendToast(s.name, data.reason);
+
+    // 自动抽取
+    setTimeout(() => generate(), 600);
   } catch (e) {
     toast("推荐失败：" + e.message);
   } finally {
@@ -718,13 +883,15 @@ function normalizeDigits(s) {
 }
 
 $("btn-recommend").addEventListener("click", recommend);
-$("btn-draw-rec").addEventListener("click", generate);
 $("btn-gen").addEventListener("click", generate);
-$("btn-reset").addEventListener("click", () => {
+$("btn-skip-quiz").addEventListener("click", () => {
+  closeQuiz();
+  $("rec-summary").textContent = "已跳过问卷，可直接选择下方生活签或点击生成。";
+});
+$("btn-retake").addEventListener("click", () => {
   answers = {};
   document.querySelectorAll(".options button").forEach((b) => b.classList.remove("selected"));
-  $("recommendation").classList.remove("show");
-  renderEmptyCard();
+  openQuiz();
 });
 
 $("btn-copy").addEventListener("click", () => {
