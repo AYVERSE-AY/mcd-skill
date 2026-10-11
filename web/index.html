@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>麦门文学生成器</title>
+<style>
+  :root {
+    --indigo: #4F46E5;
+    --violet: #7C6CF0;
+    --lavender: #A78BFA;
+    --text: #2A2748;
+    --muted: #8A86A8;
+    --line: #E2DFF5;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    background: linear-gradient(160deg, #F4F2FF 0%, #EDE9FE 100%);
+    min-height: 100vh; color: var(--text);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 32px 16px 48px;
+  }
+  header { text-align: center; margin-bottom: 22px; }
+  h1 { font-size: 26px; letter-spacing: .5px; }
+  h1 .accent {
+    background: linear-gradient(90deg, var(--indigo), var(--lavender));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .status {
+    display: inline-block; margin-top: 10px; font-size: 13px; padding: 4px 12px;
+    border-radius: 999px; background: #fff; box-shadow: 0 1px 4px rgba(79,70,229,.12);
+  }
+  .status.mcp { color: #0E9F6E; }
+  .status.fallback { color: #D97706; }
+  .styles { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 24px; }
+  .style-chip {
+    border: 1px solid var(--line); background: #fff; color: var(--muted);
+    padding: 8px 16px; border-radius: 999px; cursor: pointer; font-size: 14px; transition: .15s;
+  }
+  .style-chip:hover { border-color: var(--lavender); }
+  .style-chip.active {
+    background: linear-gradient(90deg, var(--indigo), var(--violet)); color: #fff;
+    border-color: transparent; box-shadow: 0 4px 12px rgba(79,70,229,.28);
+  }
+  .card-wrap {
+    width: min(420px, 92vw); background: #fff; border-radius: 20px; padding: 4px;
+    box-shadow: 0 12px 40px rgba(79,70,229,.16);
+  }
+  .card {
+    border-radius: 16px; padding: 36px 28px 24px; text-align: center;
+    background: linear-gradient(180deg, #FFFFFF 0%, #FAF8FF 100%);
+    position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 6px;
+    background: linear-gradient(90deg, var(--indigo), var(--violet), var(--lavender));
+  }
+  .card .emoji { font-size: 44px; margin-bottom: 6px; }
+  .card .tag { font-size: 13px; letter-spacing: 2px; color: var(--muted); margin-bottom: 4px; }
+  .card .style-name { font-size: 15px; font-weight: 600; color: var(--indigo); margin-bottom: 18px; }
+  .card .text {
+    font-size: 19px; line-height: 1.9; color: var(--text); white-space: pre-line;
+    min-height: 170px; display: flex; align-items: center; justify-content: center;
+  }
+  .card .meta {
+    margin-top: 20px; padding-top: 14px; border-top: 1px dashed var(--line);
+    font-size: 12px; color: var(--muted); line-height: 1.7;
+  }
+  .actions { display: flex; gap: 10px; justify-content: center; margin-top: 18px; }
+  button.action { border: none; border-radius: 999px; padding: 11px 22px; font-size: 15px; cursor: pointer; transition: .15s; }
+  .btn-primary { background: linear-gradient(90deg, var(--indigo), var(--violet)); color: #fff; box-shadow: 0 6px 16px rgba(79,70,229,.3); }
+  .btn-primary:hover { transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: .6; cursor: wait; transform: none; }
+  .btn-ghost { background: #fff; color: var(--indigo); border: 1px solid var(--line); }
+  .btn-ghost:hover { border-color: var(--lavender); }
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    background: var(--text); color: #fff; padding: 10px 20px; border-radius: 999px;
+    font-size: 14px; opacity: 0; transition: .25s; pointer-events: none; z-index: 10;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🍔 <span class="accent">麦门文学生成器</span></h1>
+  <div class="status" id="status">连接中…</div>
+</header>
+
+<div class="styles" id="styles"></div>
+
+<div class="card-wrap">
+  <div class="card" id="card">
+    <div class="emoji" id="c-emoji">📖</div>
+    <div class="tag" id="c-tag">麦门箴言</div>
+    <div class="style-name" id="c-style">语录体</div>
+    <div class="text" id="c-text">点击「生成」开始</div>
+    <div class="meta" id="c-meta"></div>
+  </div>
+</div>
+
+<div class="actions">
+  <button class="action btn-primary" id="btn-gen">✨ 生成</button>
+  <button class="action btn-ghost" id="btn-dl">⬇ 下载图片</button>
+  <button class="action btn-ghost" id="btn-copy">📋 复制文字</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STYLE_NAMES = { verse: "语录体", liturgy: "礼赞体", poem: "诗词体", rap: "说唱体", blessing: "祈福体" };
+const STYLE_EMOJI = { verse: "📖", liturgy: "🕯️", poem: "🍂", rap: "🎤", blessing: "🍀" };
+let currentStyle = "verse";
+let currentCard = null;
+
+const $ = (id) => document.getElementById(id);
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+async function fetchJSON(url, opts) {
+  const res = await fetch(url, opts);
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  return res.json();
+}
+
+async function loadStyles() {
+  try {
+    const data = await fetchJSON("/api/styles");
+    const box = $("styles");
+    box.innerHTML = "";
+    data.styles.forEach((key) => {
+      const chip = document.createElement("button");
+      chip.className = "style-chip" + (key === currentStyle ? " active" : "");
+      chip.textContent = STYLE_EMOJI[key] + " " + (STYLE_NAMES[key] || key);
+      chip.onclick = () => {
+        currentStyle = key;
+        box.querySelectorAll(".style-chip").forEach((c) => c.classList.remove("active"));
+        chip.classList.add("active");
+      };
+      box.appendChild(chip);
+    });
+    const st = $("status");
+    if (data.status && data.status.mcp) {
+      st.textContent = "● 已连接麦当劳 MCP（实时数据）";
+      st.className = "status mcp";
+    } else {
+      st.textContent = "● 离线示例模式（未配置 Token）";
+      st.className = "status fallback";
+    }
+  } catch (e) {
+    $("status").textContent = "服务不可用：" + e.message;
+  }
+}
+
+function renderCard(card) {
+  currentCard = card;
+  $("c-emoji").textContent = card.emoji || STYLE_EMOJI[card.style] || "📖";
+  $("c-tag").textContent = card.tag || "麦门箴言";
+  $("c-style").textContent = STYLE_NAMES[card.style] || card.style;
+  $("c-text").textContent = card.text;
+  const ctx = card.context || {};
+  const src = ctx.source === "mcp" ? "麦当劳 MCP 实时" : "内置示例数据";
+  $("c-meta").innerHTML = "数据源：" + src + "<br>单品：" + (ctx.dish || "—") + " ｜ 活动：" + (ctx.activity || "—");
+}
+
+async function generate() {
+  const btn = $("btn-gen");
+  btn.disabled = true;
+  btn.textContent = "生成中…";
+  try {
+    const card = await fetchJSON("/api/write", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ style: currentStyle }),
+    });
+    renderCard(card);
+  } catch (e) {
+    toast("生成失败：" + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "✨ 生成";
+  }
+}
+
+const DIGIT_MAP = { "𝟘": "0", "𝟙": "1", "𝟚": "2", "𝟛": "3", "𝟜": "4", "𝟝": "5", "𝟞": "6", "𝟟": "7", "𝟠": "8", "𝟡": "9" };
+function normalizeDigits(s) {
+  return s.replace(/[𝟘-𝟡]/g, (c) => DIGIT_MAP[c] || c);
+}
+
+function wrapText(ctx, text, maxWidth) {
+  const lines = [];
+  for (const para of String(text).split("\n")) {
+    if (!para) { lines.push(""); continue; }
+    let line = "";
+    for (const ch of para) {
+      if (ctx.measureText(line + ch).width > maxWidth && line) {
+        lines.push(line);
+        line = ch;
+      } else {
+        line += ch;
+      }
+    }
+    lines.push(line);
+  }
+  return lines;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function drawCard(card) {
+  const W = 800, H = 1120;
+  const cv = document.createElement("canvas");
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext("2d");
+
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, "#4F46E5");
+  bg.addColorStop(0.5, "#7C6CF0");
+  bg.addColorStop(1, "#A78BFA");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  roundRect(ctx, 48, 120, W - 96, H - 240, 28);
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fill();
+
+  const cx = W / 2;
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#7C6CF0";
+  ctx.font = "16px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.fillText(card.tag || "麦门箴言", cx, 190);
+
+  ctx.fillStyle = "#4F46E5";
+  ctx.font = "600 22px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.fillText(STYLE_NAMES[card.style] || card.style, cx, 235);
+
+  const emoji = card.emoji || STYLE_EMOJI[card.style] || "📖";
+  ctx.font = "56px 'Segoe UI Emoji','Apple Color Emoji',sans-serif";
+  ctx.fillText(emoji, cx, 330);
+
+  const text = normalizeDigits(card.text);
+  ctx.fillStyle = "#2A2748";
+  ctx.font = "30px 'PingFang SC','Microsoft YaHei',sans-serif";
+  const lines = wrapText(ctx, text, W - 180);
+  const lineH = 52;
+  const startY = Math.max(430, 430 + (6 - lines.length) * lineH * 0.5);
+  lines.forEach((ln, i) => ctx.fillText(ln, cx, startY + i * lineH));
+
+  const ctxInfo = card.context || {};
+  const src = ctxInfo.source === "mcp" ? "数据源：麦当劳 MCP 实时" : "数据源：内置示例数据";
+  ctx.strokeStyle = "#E2DFF5";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([6, 6]);
+  ctx.beginPath();
+  ctx.moveTo(110, H - 300);
+  ctx.lineTo(W - 110, H - 300);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = "#8A86A8";
+  ctx.font = "20px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.fillText(src, cx, H - 250);
+  const dish = ctxInfo.dish || "—";
+  const act = ctxInfo.activity || "—";
+  ctx.fillText("单品：" + dish, cx, H - 205);
+  ctx.fillText("活动：" + act, cx, H - 160);
+  ctx.fillStyle = "#B9B4D6";
+  ctx.fillText("麦门文学生成器 · mcd-skill", cx, H - 96);
+
+  return cv.toDataURL("image/png");
+}
+
+function download() {
+  if (!currentCard) return toast("请先生成一张卡片");
+  try {
+    const a = document.createElement("a");
+    a.download = "麦门文学-" + currentCard.style + ".png";
+    a.href = drawCard(currentCard);
+    a.click();
+    toast("图片已下载");
+  } catch (e) {
+    toast("导出失败：" + e.message);
+  }
+}
+
+async function copyText() {
+  if (!currentCard) return toast("请先生成一张卡片");
+  try {
+    await navigator.clipboard.writeText(currentCard.text);
+    toast("文案已复制");
+  } catch {
+    toast("复制失败，请手动选择文字");
+  }
+}
+
+$("btn-gen").onclick = generate;
+$("btn-dl").onclick = download;
+$("btn-copy").onclick = copyText;
+
+loadStyles();
+generate();
+</script>
+</body>
+</html>
