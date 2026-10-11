@@ -97,9 +97,9 @@
   .corner.bl { bottom: 10px; left: 10px; transform: rotate(-90deg); }
   .corner.br { bottom: 10px; right: 10px; transform: rotate(180deg); }
   .arch-frame {
-    width: 100%; aspect-ratio: 1 / 1.18;
+    width: 100%; aspect-ratio: 1 / 0.42;
     display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-    padding: 14% 8% 8%; position: relative; margin-bottom: 5%;
+    padding: 12% 8% 0; position: relative; margin-bottom: 3%;
   }
   .arch-frame svg.arch {
     position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
@@ -180,9 +180,9 @@
     </div>
 
     <div class="arch-frame">
-      <svg class="arch" viewBox="0 0 300 354" preserveAspectRatio="none">
-        <path d="M10,354 L10,120 C10,55 75,8 150,8 C225,8 290,55 290,120 L290,354" vector-effect="non-scaling-stroke"/>
-        <path d="M20,354 L20,125 C20,68 78,22 150,22 C222,22 280,68 280,125 L280,354" opacity="0.5" vector-effect="non-scaling-stroke"/>
+      <svg class="arch" viewBox="0 0 300 120" preserveAspectRatio="none">
+        <path d="M10,110 L10,100 C10,45 75,8 150,8 C225,8 290,45 290,100 L290,110" vector-effect="non-scaling-stroke" opacity="0.7"/>
+        <path d="M20,110 L20,102 C20,58 78,22 150,22 C222,22 280,58 280,102 L280,110" opacity="0.35" vector-effect="non-scaling-stroke"/>
       </svg>
       <div class="card-center">
         <svg class="sun" viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="1.2">
@@ -475,24 +475,21 @@ function drawCard(card) {
   ctx.font = "bold 25px 'Noto Serif SC', 'Songti SC', serif";
   ctx.fillText(STYLE_NAMES[card.style] || card.style, cx, 135);
 
-  // arch frame using SVG-like path (no bottom horizontal line)
-  ctx.strokeStyle = "#7A6220";
-  ctx.lineWidth = 2;
-  const ax = 84, aw = W - 168, archH = 165;
+  // decorative top arch only
+  ctx.strokeStyle = "rgba(122,98,32,.55)";
+  ctx.lineWidth = 1.6;
+  const ax = 84, aw = W - 168;
   ctx.beginPath();
-  ctx.moveTo(ax, H * 0.62);
-  ctx.lineTo(ax, 200);
-  ctx.bezierCurveTo(ax, 115, cx - aw / 2 + 20, 80, cx, 80);
-  ctx.bezierCurveTo(cx + aw / 2 - 20, 80, ax + aw, 115, ax + aw, 200);
-  ctx.lineTo(ax + aw, H * 0.62);
+  ctx.moveTo(ax, 210);
+  ctx.bezierCurveTo(ax, 135, cx - aw / 2 + 25, 95, cx, 95);
+  ctx.bezierCurveTo(cx + aw / 2 - 25, 95, ax + aw, 135, ax + aw, 210);
   ctx.stroke();
+  ctx.strokeStyle = "rgba(122,98,32,.28)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(ax + 12, H * 0.60);
-  ctx.lineTo(ax + 12, 205);
-  ctx.bezierCurveTo(ax + 12, 132, cx - aw / 2 + 32, 100, cx, 100);
-  ctx.bezierCurveTo(cx + aw / 2 - 32, 100, ax + aw - 12, 132, ax + aw - 12, 205);
-  ctx.lineTo(ax + aw - 12, H * 0.60);
+  ctx.moveTo(ax + 14, 210);
+  ctx.bezierCurveTo(ax + 14, 150, cx - aw / 2 + 38, 112, cx, 112);
+  ctx.bezierCurveTo(cx + aw / 2 - 38, 112, ax + aw - 14, 150, ax + aw - 14, 210);
   ctx.stroke();
 
   // sun symbol
